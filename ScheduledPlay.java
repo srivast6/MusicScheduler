@@ -17,6 +17,7 @@ public class ScheduledPlay {
         public void run() {
 			// Play song
 			System.out.println( "Playing song: " + song );
+			t.cancel();
         }
     }
 	
@@ -34,6 +35,7 @@ public class ScheduledPlay {
 			while ( list.play() ) {
 				System.out.println( "Playlist song # " + list.getPosition() );
 			}
+			t.cancel();
         }
     }
 	
