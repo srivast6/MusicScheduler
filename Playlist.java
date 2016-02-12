@@ -1,5 +1,5 @@
 import java.util.*;
-
+import java.io.*;
 
 
 
@@ -9,12 +9,15 @@ public class Playlist {
 	private ArrayList<String> playlist;
 	// Current postion in the playlist
 	private int position;
+	// Current postion in the playlist
+	private String name;
 	
 	
 	// Default contructor
-	public Playlist ( ) {
+	public Playlist ( String name ) {
 		this.playlist = new ArrayList<String>();
 		this.position = 0;
+		this.name = name;
 	}
 	
 	// Helper method to make sure playlist is intialized
@@ -50,6 +53,14 @@ public class Playlist {
 	public void setPosition ( int p ) {
 		this.position = p;
 	}
+	
+	public String getName ( ) {
+		return this.name;
+	}
+	
+	public void setName ( String n ) {
+		this.name = n;
+	}	
 	
 	// add a String song to the end of the playlist
 	public void addSong ( String song ) {
@@ -110,9 +121,52 @@ public class Playlist {
 		return true;
 	}
 	
+	// Save playlist to a text file format
+	public void save () {
+		File file = new File(this.name + ".playlist");
+		// if file doesnt exists, then create it
+		try {
+			if (!file.exists()) {
+				file.createNewFile();
+			}
+
+			FileWriter fw = new FileWriter(file.getAbsoluteFile());
+			BufferedWriter bw = new BufferedWriter(fw);
+			for ( int i = 0; i < playlist.size(); i++ ) {
+				bw.write( playlist.get( i ) + "\n" );
+			}
+			bw.close();
+		} catch ( Exception e ) {
+			System.out.println( "IO error " + e.getMessage() );
+		} 
+	}
+	
+	// load playlist from a text file format and set up object
+	public void load ( String filename ) {
+		File file = new File( filename );
+
+		if (!file.exists()) {
+			System.out.println( "Error, file does not exist: " + filename );
+			return;
+		}
+		
+		name = filename.split(".")[0];
+		clear();
+		
+		try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+			String line;
+			while ((line = br.readLine()) != null) {
+			   addSong( line.trim() );
+			}
+		} catch ( Exception e ) {
+			System.out.println( "IO error " + e.getMessage() );
+		} 
+	}
+	
+	
 	// main method for testing
 	public static void main(String [] args)	{
-		Playlist p1 = new Playlist ();
+		Playlist p1 = new Playlist ( "test" );
 		p1.addSong( "1" );
 		p1.addSong( "2" );
 		p1.addSong( "3" );
@@ -129,6 +183,8 @@ public class Playlist {
 		while ( p1.play() ) {
 			System.out.println();
 		}
+		
+		p1.save();
 		
 		p1.clear();
 		System.out.println( "Songs: " + p1.size() );
