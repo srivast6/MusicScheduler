@@ -2,41 +2,43 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FilenameFilter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
 import javax.swing.JFileChooser;
 import javax.swing.UIManager;
 
-import javazoom.jl.player.advanced.AdvancedPlayer;
-import javazoom.jl.player.advanced.PlaybackEvent;
-import javazoom.jl.player.advanced.PlaybackListener;
+import javazoom.jl.decoder.JavaLayerException;
+import javazoom.jl.player.Player;
 
 public class MusicPlayer {
   public ArrayList<String> mp3Files = new ArrayList<String>();
   public File musicLocation;
-  private AdvancedPlayer player;
-  private static int pausedOnFrame = 0;
-  private static boolean isPlaying = false;
+  public File song;
+  private Player player;
   private FileInputStream fis;
   private BufferedInputStream bis;
-  private int total = 0;
-  boolean paused = false;
-  int bufferLoc = 0;
+  private boolean paused;
+  private int total;
+  private int pauseLocation;
 
-  // boolean paused = false;
 
-  public void play(File song) {
+  public void setSong(File song) {
+    this.song = song;
+  }
+
+  public void play(int pos) {
     try {
-      FileInputStream fis = new FileInputStream(song.getAbsolutePath());
+
+      fis = new FileInputStream(song.getAbsolutePath());
       total = fis.available();
-      System.out.println(total);
-      System.out.println(bufferLoc);
-      if (bufferLoc > -1)
-        fis.skip(bufferLoc);
+
+      if (pos > -1)
+        fis.skip(pos);
 
       bis = new BufferedInputStream(fis);
-      player = new AdvancedPlayer(bis);
+      player = new Player(bis);
 
     } catch (Exception e) {
       System.out.println("Problem playing file " + song.getName());
@@ -46,23 +48,9 @@ public class MusicPlayer {
       @Override
       public void run() {
         try {
-          player.setPlayBackListener(new PlaybackListener() {
-            @Override
-            public void playbackFinished(PlaybackEvent event) {
-              pausedOnFrame = event.getFrame();
-            }
-          });
-          player.play(pausedOnFrame, total);
-
-          // wait until song is finished
-          while (pausedOnFrame != 0) {
-            Thread.sleep(10);
-          }
-
-        } catch (Exception e) {
-          System.out.println(e);
-        } finally {
-          isPlaying = false;
+          player.play();
+        } catch (JavaLayerException e) {
+          e.printStackTrace();
         }
       }
     }.start();
@@ -99,24 +87,41 @@ public class MusicPlayer {
     }
   }
 
+  public boolean isPaused() {
+    return paused;
+  }
+
 
   public void pause() {
-    if (!paused) {
-      paused = true;
-      player.stop();
+    try {
+      if (!paused) {
+        // obtain location in the buffer
+        pauseLocation = fis.available();
+        player.close();
+
+        // prepare to reuse objects
+        fis = null;
+        bis = null;
+        player = null;
+
+        // setting song as paused
+        paused = true;
+      }
+    } catch (IOException e) {
+      e.printStackTrace();
     }
   }
 
   public void stop() {
+    paused = false;
     player.close();
-    pausedOnFrame = -1;
-    isPlaying = false;
   }
 
   public void resume(File currentSong) {
     if (paused) {
+      if (pauseLocation < total)
+        play(total - pauseLocation);
       paused = false;
-      play(currentSong);
     }
   }
 
@@ -158,10 +163,11 @@ public class MusicPlayer {
         } else {
           currentSong = songList[songNum - 1];
           System.out.println("Playing: " + currentSong.getName());
-          isPlaying = true;
-          player.play(currentSong);
 
-          while (isPlaying) {
+          player.setSong(currentSong);
+          player.play(-1);
+
+          while (!player.player.isComplete() || player.isPaused()) {
             // Should not wait for response if song has ended
             String interruption = in.nextLine();
 
@@ -178,13 +184,11 @@ public class MusicPlayer {
               case "STOP":
                 player.stop();
                 break;
-
-              default:
-                break;
             }
           }
         }
       } catch (Exception e) {
+        e.printStackTrace();
         if (selection.equalsIgnoreCase("help")) {
           System.out.println("Exit: exits the application");
           System.out.println("Dir : changes the directory");
