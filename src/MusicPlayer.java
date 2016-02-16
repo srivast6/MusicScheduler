@@ -6,28 +6,39 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 import javax.swing.JFileChooser;
+import javax.swing.UIManager;
 
-import javazoom.jl.player.Player;
 import javazoom.jl.player.advanced.AdvancedPlayer;
+import javazoom.jl.player.advanced.PlaybackEvent;
 import javazoom.jl.player.advanced.PlaybackListener;
-
-
 
 public class MusicPlayer {
   public ArrayList<String> mp3Files = new ArrayList<String>();
   public File musicLocation;
-  private Player player;
-  private AdvancedPlayer advPlayer;
+  private AdvancedPlayer player;
+  private static int pausedOnFrame = 0;
+  private static boolean isPlaying = false;
+  private FileInputStream fis;
+  private BufferedInputStream bis;
+  private int total = 0;
+  boolean paused = false;
+  int bufferLoc = 0;
 
-  public MusicPlayer() {}
+  // boolean paused = false;
 
   public void play(File song) {
     try {
       FileInputStream fis = new FileInputStream(song.getAbsolutePath());
-      BufferedInputStream bis = new BufferedInputStream(fis);
-      player = new Player(bis);
-      advPlayer = new AdvancedPlayer(bis);
-    } catch (Exception e) { //
+      total = fis.available();
+      System.out.println(total);
+      System.out.println(bufferLoc);
+      if (bufferLoc > -1)
+        fis.skip(bufferLoc);
+
+      bis = new BufferedInputStream(fis);
+      player = new AdvancedPlayer(bis);
+
+    } catch (Exception e) {
       System.out.println("Problem playing file " + song.getName());
       System.out.println(e);
     }
@@ -35,44 +46,90 @@ public class MusicPlayer {
       @Override
       public void run() {
         try {
-          player.play();
-          advPlayer.setPlayBackListener(new PlaybackListener() {
-
+          player.setPlayBackListener(new PlaybackListener() {
+            @Override
+            public void playbackFinished(PlaybackEvent event) {
+              pausedOnFrame = event.getFrame();
+            }
           });
-          while (!player.isComplete()) {
+          player.play(pausedOnFrame, total);
+
+          // wait until song is finished
+          while (pausedOnFrame != 0) {
+            Thread.sleep(10);
           }
 
         } catch (Exception e) {
           System.out.println(e);
+        } finally {
+          isPlaying = false;
         }
       }
     }.start();
+
   }
 
+
+  // File chooser for the music player, selects the directory to play music from.
   public void selectDirectory() {
+    // Set look and feel
+    try {
+      UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
 
     JFileChooser fc = new JFileChooser();
     fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
     fc.setDialogTitle("Select your music directory.");
-    int returnVal = fc.showOpenDialog(fc);
 
-    if (returnVal == JFileChooser.APPROVE_OPTION) {
-      File file = fc.getSelectedFile();
+    while (true) {
+      int returnVal = fc.showOpenDialog(fc);
+      if (returnVal == JFileChooser.APPROVE_OPTION) {
+        File file = fc.getSelectedFile();
+        System.out.println("Opening: " + file.getName() + ". \n");
+        musicLocation = file;
 
-      // This is where a real application would open the file.
-      System.out.println("Opening: " + file.getName() + ". \n");
-      musicLocation = file;
-    } else {
-      System.out.println("Open command cancelled by user. \n");
+        // allows reuse of filechooser
+        fc.setSelectedFile(new File(""));
+        break;
+      } else {
+        System.out.println("Select a file location");
+      }
     }
   }
 
+
+  public void pause() {
+    if (!paused) {
+      paused = true;
+      player.stop();
+    }
+  }
+
+  public void stop() {
+    player.close();
+    pausedOnFrame = -1;
+    isPlaying = false;
+  }
+
+  public void resume(File currentSong) {
+    if (paused) {
+      paused = false;
+      play(currentSong);
+    }
+  }
+
+
   // test client
   public static void main(String[] args) {
-    boolean paused = false;
 
+    Scanner in = new Scanner(System.in);
     MusicPlayer player = new MusicPlayer();
     player.selectDirectory();
+
+
+
     System.out.println("Directory name: " + player.musicLocation);
 
     // Lists songs available
@@ -90,8 +147,8 @@ public class MusicPlayer {
     System.out.println("Type song number to play. (or 'help' for more features)");
     while (true) {
       System.out.print(">");
-      Scanner in = new Scanner(System.in);
       String selection = in.nextLine();
+      File currentSong;
 
       try {
         int songNum = Integer.parseInt(selection);
@@ -99,20 +156,36 @@ public class MusicPlayer {
         if (songNum < 1 || songNum > songList.length) {
           System.out.println("Song number does not exist.");
         } else {
-          System.out.println("Playing: " + songList[songNum - 1].getName());
-          player.play(songList[songNum - 1]);
+          currentSong = songList[songNum - 1];
+          System.out.println("Playing: " + currentSong.getName());
+          isPlaying = true;
+          player.play(currentSong);
 
-          while (!player.player.isComplete()) {
-            String interuption = in.nextLine();
-            if (interuption.equalsIgnoreCase("stop")) {
-              player.player.close();
+          while (isPlaying) {
+            // Should not wait for response if song has ended
+            String interruption = in.nextLine();
+
+            switch (interruption.toUpperCase()) {
+            // Pause playback of that song
+              case "PAUSE":
+                player.pause();
+                break;
+              // Resume playback
+              case "RESUME":
+                player.resume(currentSong);
+                break;
+              // Stop playback of that song completely
+              case "STOP":
+                player.stop();
+                break;
+
+              default:
+                break;
             }
           }
         }
       } catch (Exception e) {
-
         if (selection.equalsIgnoreCase("help")) {
-
           System.out.println("Exit: exits the application");
           System.out.println("Dir : changes the directory");
         }
@@ -122,9 +195,6 @@ public class MusicPlayer {
           break;
         }
       }
-
     }
   }
-
-
 }
