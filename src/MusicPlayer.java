@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 import javax.swing.JFileChooser;
+import javax.swing.UIManager;
 
 import javazoom.jl.player.advanced.AdvancedPlayer;
 import javazoom.jl.player.advanced.PlaybackEvent;
@@ -17,13 +18,24 @@ public class MusicPlayer {
   private AdvancedPlayer player;
   private static int pausedOnFrame = 0;
   private static boolean isPlaying = false;
+  private FileInputStream fis;
+  private BufferedInputStream bis;
+  private int total = 0;
+  boolean paused = false;
+  int bufferLoc = 0;
 
-  public MusicPlayer() {}
+  // boolean paused = false;
 
   public void play(File song) {
     try {
       FileInputStream fis = new FileInputStream(song.getAbsolutePath());
-      BufferedInputStream bis = new BufferedInputStream(fis);
+      total = fis.available();
+      System.out.println(total);
+      System.out.println(bufferLoc);
+      if (bufferLoc > -1)
+        fis.skip(bufferLoc);
+
+      bis = new BufferedInputStream(fis);
       player = new AdvancedPlayer(bis);
 
     } catch (Exception e) {
@@ -40,7 +52,7 @@ public class MusicPlayer {
               pausedOnFrame = event.getFrame();
             }
           });
-          player.play(pausedOnFrame, Integer.MAX_VALUE);
+          player.play(pausedOnFrame, total);
 
           // wait until song is finished
           while (pausedOnFrame != 0) {
@@ -57,29 +69,67 @@ public class MusicPlayer {
 
   }
 
+
+  // File chooser for the music player, selects the directory to play music from.
   public void selectDirectory() {
+    // Set look and feel
+    try {
+      UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
 
     JFileChooser fc = new JFileChooser();
     fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
     fc.setDialogTitle("Select your music directory.");
-    int returnVal = fc.showOpenDialog(fc);
 
-    if (returnVal == JFileChooser.APPROVE_OPTION) {
-      File file = fc.getSelectedFile();
+    while (true) {
+      int returnVal = fc.showOpenDialog(fc);
+      if (returnVal == JFileChooser.APPROVE_OPTION) {
+        File file = fc.getSelectedFile();
+        System.out.println("Opening: " + file.getName() + ". \n");
+        musicLocation = file;
 
-      // This is where a real application would open the file.
-      System.out.println("Opening: " + file.getName() + ". \n");
-      musicLocation = file;
-    } else {
-      System.out.println("Open command cancelled by user. \n");
+        // allows reuse of filechooser
+        fc.setSelectedFile(new File(""));
+        break;
+      } else {
+        System.out.println("Select a file location");
+      }
     }
   }
+
+
+  public void pause() {
+    if (!paused) {
+      paused = true;
+      player.stop();
+    }
+  }
+
+  public void stop() {
+    player.close();
+    pausedOnFrame = -1;
+    isPlaying = false;
+  }
+
+  public void resume(File currentSong) {
+    if (paused) {
+      paused = false;
+      play(currentSong);
+    }
+  }
+
 
   // test client
   public static void main(String[] args) {
 
+    Scanner in = new Scanner(System.in);
     MusicPlayer player = new MusicPlayer();
     player.selectDirectory();
+
+
+
     System.out.println("Directory name: " + player.musicLocation);
 
     // Lists songs available
@@ -97,10 +147,8 @@ public class MusicPlayer {
     System.out.println("Type song number to play. (or 'help' for more features)");
     while (true) {
       System.out.print(">");
-      Scanner in = new Scanner(System.in);
       String selection = in.nextLine();
       File currentSong;
-      boolean paused = false;
 
       try {
         int songNum = Integer.parseInt(selection);
@@ -120,23 +168,15 @@ public class MusicPlayer {
             switch (interruption.toUpperCase()) {
             // Pause playback of that song
               case "PAUSE":
-                if (!paused) {
-                  paused = true;
-                  player.player.stop();
-                }
+                player.pause();
                 break;
               // Resume playback
               case "RESUME":
-                if (paused) {
-                  paused = false;
-                  player.play(currentSong);
-                }
+                player.resume(currentSong);
                 break;
               // Stop playback of that song completely
               case "STOP":
-                player.player.close();
-                pausedOnFrame = 0;
-                isPlaying = false;
+                player.stop();
                 break;
 
               default:
