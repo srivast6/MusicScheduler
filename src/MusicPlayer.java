@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 import javax.swing.JFileChooser;
-import javax.swing.UIManager;
 
 import javazoom.jl.decoder.JavaLayerException;
 import javazoom.jl.player.Player;
@@ -23,6 +22,29 @@ public class MusicPlayer {
   private int total;
   private int pauseLocation;
 
+  public MusicPlayer() {
+    musicLocation = null;
+    song = null;
+    player = null;
+    paused = false;
+  }
+
+  public boolean isPlaying() {
+    if (player == null)
+      return false;
+
+    if (paused || !player.isComplete()) {
+      return true;
+    } else
+      return false;
+  }
+
+  public boolean songSelected() {
+    if (song == null) {
+      return false;
+    } else
+      return true;
+  }
 
   public void setSong(File song) {
     this.song = song;
@@ -61,11 +83,7 @@ public class MusicPlayer {
   // File chooser for the music player, selects the directory to play music from.
   public void selectDirectory() {
     // Set look and feel
-    try {
-      UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
+
 
     JFileChooser fc = new JFileChooser();
     fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -90,7 +108,6 @@ public class MusicPlayer {
   public boolean isPaused() {
     return paused;
   }
-
 
   public void pause() {
     try {
@@ -125,6 +142,15 @@ public class MusicPlayer {
     }
   }
 
+  public File[] getSongs() {
+    File[] songList = musicLocation.listFiles(new FilenameFilter() {
+      public boolean accept(File dir, String name) {
+        return name.toLowerCase().endsWith(".mp3");
+      }
+    });
+    return songList;
+  }
+
 
   // test client
   public static void main(String[] args) {
@@ -132,8 +158,6 @@ public class MusicPlayer {
     Scanner in = new Scanner(System.in);
     MusicPlayer player = new MusicPlayer();
     player.selectDirectory();
-
-
 
     System.out.println("Directory name: " + player.musicLocation);
 
