@@ -29,10 +29,12 @@ import javax.sound.sampled.Mixer.Info;
 
 public class Audio {
 
-	public static void main(String[] args) throws Exception {
-		System.out.println(getHierarchyInfo());
-		System.out.println(getMasterOutputVolume());
-	}
+//	public static void main(String[] args) throws Exception {
+//		//System.out.println(getHierarchyInfo());
+//		System.out.println("volume: " + getMasterOutputVolume());
+//		Audio.setMasterOutputVolume(0.8f);
+//		System.out.println("volume2: " + getMasterOutputVolume());
+//	}
 
 	public static void setMasterOutputVolume(float value) {
 		if (value < 0 || value > 1)
@@ -94,7 +96,7 @@ public class Audio {
 	public static Line getMasterOutputLine() {
 		for (Mixer mixer : getMixers()) {
 			for (Line line : getAvailableOutputLines(mixer)) {
-				if (line.getLineInfo().toString().contains("Master")) return line;
+				if (line.getLineInfo().toString().contains("SPEAKER")) return line;
 			}
 		}
 		return null;
