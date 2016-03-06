@@ -7,10 +7,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
+import java.io.FilenameFilter;
 import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
+import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -39,10 +42,13 @@ public class MusicHome {
   private JButton dir;
   private JLabel nowPlaying;
   private JList playlist;
-  private JTable songlist;
+  private JList songlist;
   private MusicPlayer player;
   ArrayList<String> playlistEntries;
-  SongTableModel t;
+  DefaultListModel<String> listmodel;
+  
+  String[] playlistNames;
+  int selectedIndex = 0;
 
   public MusicHome() {
     prepareGUI();
@@ -125,7 +131,10 @@ public class MusicHome {
     dir.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        player.selectDirectory();
+        //player.selectDirectory();
+        File f = new File("Music/Blues");
+        player.musicLocation = f;
+        System.out.println(f.getAbsolutePath());
         player.setSong(player.getSongs()[0]);
       }
     });
@@ -161,12 +170,27 @@ public class MusicHome {
     c.gridy = 0;
     mainPanel.add(controlPanel, c);
   }
+  
+  private String[] getPlaylistDirectory() {
+	  File dir = new File("Music");
+	  String[] directories = dir.list(new FilenameFilter() {
+		
+		@Override
+		public boolean accept(File current, String name) {
+			// TODO Auto-generated method stub
+			return new File(current, name).isDirectory();
+		}
+	});
+	  return directories;
+  }
 
   private void addPlaylistPanel() {
     playlistEntries = new ArrayList<>();
-    playlistEntries.add("Happy");
-    playlistEntries.add("Pump Up");
-    playlistEntries.add("Mellow");
+    playlistNames = getPlaylistDirectory();
+    for(int i = 0; i < playlistNames.length; i++) {
+    	playlistEntries.add(playlistNames[i]);
+    }
+
     JPanel playlistPanel = new JPanel();
     playlistPanel.setSize(600, 600);
     playlistPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
@@ -179,12 +203,18 @@ public class MusicHome {
       @Override
       public void valueChanged(ListSelectionEvent e) {
         int plistIndex = playlist.getSelectedIndex();
-        t.selectedIndex = plistIndex;
+        selectedIndex = plistIndex;
         System.out.print(plistIndex);
+        listmodel.clear();
+        ArrayList<String> s = changeSonglist();
+        for(int i = 0; i < s.size(); i++) {
+        	listmodel.addElement(s.get(i));
+        }
         songlist.revalidate();
         songlist.repaint();
       }
     });
+    
     playlistPanel.add(heading);
     playlistPanel.add(playlist);
     c.anchor = GridBagConstraints.LINE_START;
@@ -201,14 +231,13 @@ public class MusicHome {
     songListPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
     songListPanel.setLayout(new BoxLayout(songListPanel, BoxLayout.PAGE_AXIS));
     JLabel heading = new JLabel("Song List");
-    t = new SongTableModel();
-    songlist = new JTable(t);
-    songlist.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-    songlist.setRowSelectionAllowed(true);
-    songlist.setFillsViewportHeight(true);
-    songlist.setShowGrid(true);
+    listmodel = new DefaultListModel<>();
+    ArrayList<String> s = changeSonglist();
+    for(int i = 0; i < s.size(); i++) {
+    	listmodel.addElement(s.get(i));
+    }
+    songlist = new JList(listmodel);
     songListPanel.add(heading);
-    songListPanel.add(songlist.getTableHeader());
     songListPanel.add(songlist);
     c.anchor = GridBagConstraints.CENTER;
     c.gridx = 1;
@@ -217,5 +246,26 @@ public class MusicHome {
     c.weightx = 1;
     mainPanel.add(songListPanel, c);
   }
+  
+  private File[] getSongs() {
+	  File dir = new File("Music/" + playlistNames[selectedIndex]);
+	    File[] songList = dir.listFiles(new FilenameFilter() {
+	      public boolean accept(File dir, String name) {
+	        return name.toLowerCase().endsWith(".mp3");
+	      }
+	    });
+	    return songList;
+  }
+  
+  private ArrayList<String> changeSonglist() {
+	  File[] songs = getSongs();
+	  ArrayList<String> songNames = new ArrayList<>();
+	  for(int i = 0; i < songs.length; i++) {
+		  songNames.add(songs[i].getName());
+	  }
+	  return songNames;
+  }
 
 };
+
+
