@@ -12,7 +12,6 @@ import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -26,6 +25,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+
 
 /**
  * Created by gauravsrivastava on 2/6/16.
@@ -260,17 +260,16 @@ public class MusicHome {
     });
     playlistPanel.add(heading, BorderLayout.NORTH);
     playlistPanel.add(playlist, BorderLayout.CENTER);
-    heading.setBorder(new EmptyBorder(4, 16, 0, 16));
+    heading.setBorder(new EmptyBorder(4, 16, 0, 8));
     playlist.setBorder(new EmptyBorder(4, 16, 0, 16));
 
     mainPanel.add(playlistPanel, BorderLayout.WEST);
   }
 
   private void addSongListPanel() {
-    JPanel songListPanel = new JPanel();
+    JPanel songListPanel = new JPanel(new BorderLayout());
     songListPanel.setSize(600, 600);
     songListPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-    songListPanel.setLayout(new BoxLayout(songListPanel, BoxLayout.PAGE_AXIS));
     JLabel heading = new JLabel("Song List");
 
     listmodel = new DefaultListModel<>();
@@ -295,6 +294,7 @@ public class MusicHome {
             player.stop();
           }
           player.setSong(selectedSong);
+          player.play(-1);
         }
       }
 
@@ -314,8 +314,8 @@ public class MusicHome {
     heading.setBorder(new EmptyBorder(4, 16, 0, 16));
     songlist.setBorder(new EmptyBorder(4, 16, 0, 16));
 
-    songListPanel.add(heading);
-    songListPanel.add(songlist);
+    songListPanel.add(heading, BorderLayout.NORTH);
+    songListPanel.add(songlist, BorderLayout.CENTER);
 
     mainPanel.add(songListPanel, BorderLayout.CENTER);
   }
