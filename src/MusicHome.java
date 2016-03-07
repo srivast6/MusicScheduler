@@ -12,7 +12,6 @@ import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -20,12 +19,18 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+
+import com.sun.glass.events.KeyEvent;
+
 
 /**
  * Created by gauravsrivastava on 2/6/16.
@@ -128,6 +133,8 @@ public class MusicHome {
       }
     });
 
+
+    createMenuBar();
     mainframe.setVisible(true);
   }
 
@@ -223,7 +230,7 @@ public class MusicHome {
     musicControlPanel.setBorder(new EmptyBorder(4, 16, 4, 16));
     nowPlayingPanel.setBorder(new EmptyBorder(4, 16, 4, 16));
 
-    mainPanel.add(controlPanel, BorderLayout.NORTH);
+    mainPanel.add(controlPanel, BorderLayout.SOUTH);
   }
 
   private void addPlaylistPanel() {
@@ -260,17 +267,16 @@ public class MusicHome {
     });
     playlistPanel.add(heading, BorderLayout.NORTH);
     playlistPanel.add(playlist, BorderLayout.CENTER);
-    heading.setBorder(new EmptyBorder(4, 16, 0, 16));
+    heading.setBorder(new EmptyBorder(4, 16, 0, 8));
     playlist.setBorder(new EmptyBorder(4, 16, 0, 16));
 
     mainPanel.add(playlistPanel, BorderLayout.WEST);
   }
 
   private void addSongListPanel() {
-    JPanel songListPanel = new JPanel();
+    JPanel songListPanel = new JPanel(new BorderLayout());
     songListPanel.setSize(600, 600);
     songListPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-    songListPanel.setLayout(new BoxLayout(songListPanel, BoxLayout.PAGE_AXIS));
     JLabel heading = new JLabel("Song List");
 
     listmodel = new DefaultListModel<>();
@@ -295,6 +301,7 @@ public class MusicHome {
             player.stop();
           }
           player.setSong(selectedSong);
+          player.play(-1);
         }
       }
 
@@ -314,11 +321,81 @@ public class MusicHome {
     heading.setBorder(new EmptyBorder(4, 16, 0, 16));
     songlist.setBorder(new EmptyBorder(4, 16, 0, 16));
 
-    songListPanel.add(heading);
-    songListPanel.add(songlist);
+    songListPanel.add(heading, BorderLayout.NORTH);
+    songListPanel.add(songlist, BorderLayout.CENTER);
 
     mainPanel.add(songListPanel, BorderLayout.CENTER);
   }
+
+  private void createMenuBar() {
+
+    JMenuBar menubar = new JMenuBar();
+    ImageIcon icon = new ImageIcon("exit.png");
+
+    // FILE MENUBAR ITEM
+    JMenu file = new JMenu("File");
+    file.setMnemonic(KeyEvent.VK_F);
+
+    JMenuItem selectDirectory = new JMenuItem("Change Directory", icon);
+    selectDirectory.setMnemonic(KeyEvent.VK_E);
+    selectDirectory.setToolTipText("Select Music Directory");
+    selectDirectory.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent event) {
+        player.selectDirectory();
+      }
+    });
+    file.add(selectDirectory);
+    JMenuItem exitSelection = new JMenuItem("Exit", icon);
+    exitSelection.setMnemonic(KeyEvent.VK_E);
+    exitSelection.setToolTipText("Exit application");
+    exitSelection.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent event) {
+        System.exit(0);
+      }
+    });
+    file.add(exitSelection);
+
+
+    // SCHEDULE MENUBAR ITEM
+    JMenu schedule = new JMenu("Schedule");
+    schedule.setMnemonic(KeyEvent.VK_F);
+
+    JMenuItem newSchedule = new JMenuItem("New Schedule", icon);
+    newSchedule.setMnemonic(KeyEvent.VK_E);
+    newSchedule.setToolTipText("Exit application");
+    newSchedule.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent event) {
+        System.exit(0);
+      }
+    });
+    schedule.add(newSchedule);
+
+    // ALARM MENUBAR ITEM
+    JMenu alarm = new JMenu("Alarm");
+    alarm.setMnemonic(KeyEvent.VK_F);
+
+    JMenuItem newAlarm = new JMenuItem("New Alarm", icon);
+    newAlarm.setMnemonic(KeyEvent.VK_E);
+    newAlarm.setToolTipText("Exit application");
+    newAlarm.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent event) {
+        System.exit(0);
+      }
+    });
+    alarm.add(newAlarm);
+
+    menubar.add(file);
+    menubar.add(schedule);
+    menubar.add(alarm);
+
+    mainframe.setJMenuBar(menubar);
+  }
+
+
 
   private File[] getSongs() {
     File dir = new File(musicDirectory.getAbsolutePath() + "/" + playlistNames[selectedIndex]);
