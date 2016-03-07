@@ -1,5 +1,6 @@
 import java.util.*;
 import java.io.*;
+import java.nio.file.*;
 
 
 public class Playlist {
@@ -120,46 +121,49 @@ public class Playlist {
 		return true;
 	}
 	
-	// Save playlist to a text file format
+	// Save playlist to a folder based on object
 	public void save () {
-		File file = new File(this.name + ".playlist");
-		// if file doesnt exists, then create it
+		// directorty style may change for other OS
+		File path = new File(System.getProperty("user.dir") + "/" + this.name);
+
+		// if folder doesnt exists, then create it
 		try {
-			if (!file.exists()) {
-				file.createNewFile();
+			if (!path.exists()) {
+				path.createNewFile();
 			}
 
-			FileWriter fw = new FileWriter(file.getAbsoluteFile());
-			BufferedWriter bw = new BufferedWriter(fw);
 			for ( int i = 0; i < playlist.size(); i++ ) {
-				bw.write( playlist.get( i ) + "\n" );
+				Files.copy( Paths.get(playlist.get( i )), Paths.get(path.getAbsolutePath() + "/" + playlist.get( i ).split("/|\\")[ playlist.get( i ).split("/|\\").length -1 ]) );
 			}
-			bw.close();
+
 		} catch ( Exception e ) {
 			System.out.println( "IO error " + e.getMessage() );
 		} 
 	}
 	
-	// load playlist from a text file format and set up object
-	public void load ( String filename ) {
-		File file = new File( filename );
+	// load playlist from a folder and set up object
+	public void load ( String foldername ) {
+		File path = new File( foldername );
 
-		if (!file.exists()) {
-			System.out.println( "Error, file does not exist: " + filename );
+		if (!path.exists()) {
+			System.out.println( "Error, file does not exist: " + foldername );
 			return;
 		}
 		
-		name = filename.split(".")[0];
+		name = foldername.split("/|\\")[ foldername.split("/|\\").length -1 ];
 		clear();
 		
-		try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-			String line;
-			while ((line = br.readLine()) != null) {
-			   addSong( line.trim() );
+		File[] listOfFiles = path.listFiles();
+
+		for (int i = 0; i < listOfFiles.length; i++) {
+		  if (listOfFiles[i].isFile()) {
+			System.out.println("File " + listOfFiles[i].getName());
+			if ( listOfFiles[i].getName().endsWith(".mp3") ) {
+				addSong( listOfFiles[i].getName() );
 			}
-		} catch ( Exception e ) {
-			System.out.println( "IO error " + e.getMessage() );
-		} 
+		  }
+		}
+    
 	}
 	
 	
