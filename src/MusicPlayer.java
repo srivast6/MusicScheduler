@@ -21,22 +21,18 @@ public class MusicPlayer {
   private boolean paused;
   private int total;
   private int pauseLocation;
+  private BooleanEventListener playing;
 
-  public MusicPlayer() {
+  public MusicPlayer(BooleanEventListener listener) {
     musicLocation = null;
     song = null;
     player = null;
     paused = false;
+    playing = listener;
   }
 
   public boolean isPlaying() {
-    if (player == null)
-      return false;
-
-    if (paused || !player.isComplete()) {
-      return true;
-    } else
-      return false;
+    return playing.getFlag();
   }
 
   public boolean songSelected() {
@@ -52,7 +48,7 @@ public class MusicPlayer {
 
   public void play(int pos) {
     try {
-
+      playing.setFlag(true);
       fis = new FileInputStream(song.getAbsolutePath());
       total = fis.available();
 
@@ -71,8 +67,21 @@ public class MusicPlayer {
       public void run() {
         try {
           player.play();
+
+          while (true) {
+            if (player == null) {
+              return;
+            }
+            if (player.isComplete()) {
+              System.out.println("Song Over");
+              playing.setFlag(false);
+              return;
+            }
+          }
+
         } catch (JavaLayerException e) {
           e.printStackTrace();
+        } finally {
         }
       }
     }.start();
@@ -112,6 +121,9 @@ public class MusicPlayer {
   public void pause() {
     try {
       if (!paused) {
+
+        System.out.println("song paused------1");
+
         // obtain location in the buffer
         pauseLocation = fis.available();
         player.close();
@@ -130,8 +142,12 @@ public class MusicPlayer {
   }
 
   public void stop() {
+    playing.setFlag(false);
+    if (!paused) {
+      player.close();
+    }
     paused = false;
-    player.close();
+    player = null;
   }
 
   public void resume(File currentSong) {
@@ -155,8 +171,20 @@ public class MusicPlayer {
   // test client
   public static void main(String[] args) {
 
+    BooleanChangeListener listener = new BooleanChangeListener() {
+      @Override
+      public void stateChanged(BooleanChangeEvent event) {
+        System.out.println("Detected change to: " + event.getDispatcher().getFlag() + " -- event: "
+            + event);
+      }
+    };
+
+    BooleanEventListener isPlaying = new BooleanEventListener(false);
+    isPlaying.addBooleanChangeListener(listener);
+
+
     Scanner in = new Scanner(System.in);
-    MusicPlayer player = new MusicPlayer();
+    MusicPlayer player = new MusicPlayer(isPlaying);
     player.selectDirectory();
 
     System.out.println("Directory name: " + player.musicLocation);
@@ -191,7 +219,7 @@ public class MusicPlayer {
           player.setSong(currentSong);
           player.play(-1);
 
-          while (!player.player.isComplete() || player.isPaused()) {
+          while (player.playing.getFlag()) {
             // Should not wait for response if song has ended
             String interruption = in.nextLine();
 
