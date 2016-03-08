@@ -303,6 +303,15 @@ public class MusicHome {
           player.setSong(selectedSong);
           player.play(-1);
         }
+        if (e.getClickCount() == 1) {
+          File selectedSong =
+              new File(musicDirectory.getAbsolutePath() + "/" + playlist.getSelectedValue() + "/"
+                  + songlist.getSelectedValue());
+
+          songName = (String) songlist.getSelectedValue();
+          if (!player.isPlaying())
+            player.setSong(selectedSong);
+        }
       }
 
       @Override
