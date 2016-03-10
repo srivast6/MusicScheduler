@@ -139,7 +139,6 @@ public class MusicHome {
       }
     });
 
-    createMenuBar();
     mainframe.setVisible(true);
   }
 
@@ -149,14 +148,15 @@ public class MusicHome {
     addControlPanel();
     addPlaylistPanel();
     addSongListPanel();
+    createMenuBar();
     mainframe.add(mainPanel, BorderLayout.CENTER);
 
   }
 
   // used primarily to update view when changing directories
   private void refreshView() {
-    mainframe.removeAll();
-    prepareGUI();
+    mainframe.remove(mainPanel);
+    addMainPanel();
     mainframe.revalidate();
     mainframe.repaint();
   }
