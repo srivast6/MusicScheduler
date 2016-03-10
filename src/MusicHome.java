@@ -7,7 +7,12 @@ import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FilenameFilter;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
@@ -69,6 +74,7 @@ public class MusicHome {
   int selectedIndex = 0;
 
   public MusicHome() {
+    load();
     prepareGUI();
     prepareEventListener();
     player = new MusicPlayer(isPlaying);
@@ -133,7 +139,6 @@ public class MusicHome {
       }
     });
 
-
     createMenuBar();
     mainframe.setVisible(true);
   }
@@ -146,6 +151,14 @@ public class MusicHome {
     addSongListPanel();
     mainframe.add(mainPanel, BorderLayout.CENTER);
 
+  }
+
+  // used primarily to update view when changing directories
+  private void refreshView() {
+    mainframe.removeAll();
+    prepareGUI();
+    mainframe.revalidate();
+    mainframe.repaint();
   }
 
   private void musicControl() {
@@ -235,8 +248,8 @@ public class MusicHome {
 
   private void addPlaylistPanel() {
     playlistEntries = new ArrayList<>();
-
     playlistNames = getPlaylistDirectory();
+
     for (int i = 0; i < playlistNames.length; i++) {
       playlistEntries.add(playlistNames[i]);
     }
@@ -253,7 +266,6 @@ public class MusicHome {
       public void valueChanged(ListSelectionEvent e) {
         int plistIndex = playlist.getSelectedIndex();
         selectedIndex = plistIndex;
-        System.out.print(plistIndex);
 
         listmodel.clear();
         ArrayList<String> s = changeSonglist();
@@ -351,7 +363,8 @@ public class MusicHome {
     selectDirectory.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent event) {
-        player.selectDirectory();
+        e.didLoad = false;
+        refreshView();
       }
     });
     file.add(selectDirectory);
@@ -407,6 +420,11 @@ public class MusicHome {
 
 
   private File[] getSongs() {
+    if (playlistNames.length == 0) {
+      File[] empty = new File[0];
+      return empty;
+    }
+
     File dir = new File(musicDirectory.getAbsolutePath() + "/" + playlistNames[selectedIndex]);
     File[] songList = dir.listFiles(new FilenameFilter() {
       public boolean accept(File dir, String name) {
@@ -418,6 +436,7 @@ public class MusicHome {
 
   private ArrayList<String> changeSonglist() {
     File[] songs = getSongs();
+
     ArrayList<String> songNames = new ArrayList<>();
     for (int i = 0; i < songs.length; i++) {
       songNames.add(songs[i].getName());
@@ -426,13 +445,23 @@ public class MusicHome {
   }
 
   private String[] getPlaylistDirectory() {
-    musicDirectory = selectMusicDirectory();
+
+    if (!e.didLoad) {
+      musicDirectory = selectMusicDirectory();
+      e.setPath(musicDirectory);
+      save();
+    }
     String[] directories = musicDirectory.list(new FilenameFilter() {
       @Override
       public boolean accept(File current, String name) {
         return new File(current, name).isDirectory();
       }
     });
+
+    if (directories.length == 0) {
+      String[] empty = new String[0];
+      return empty;
+    }
     return directories;
   }
 
@@ -457,5 +486,40 @@ public class MusicHome {
     return selectedFile;
   }
 
+  public saveData e;
+
+  public void save() {
+    try {
+      FileOutputStream fileOut = new FileOutputStream("/tmp/saveData.ser");
+      ObjectOutputStream out = new ObjectOutputStream(fileOut);
+      out.writeObject(e);
+      out.close();
+      fileOut.close();
+      System.out.printf("Serialized data is saved in /tmp/saveData.ser");
+    } catch (IOException i) {
+      i.printStackTrace();
+    }
+  }
+
+  public void load() {
+    e = null;
+    try {
+      FileInputStream fileIn = new FileInputStream("/tmp/saveData.ser");
+      ObjectInputStream in = new ObjectInputStream(fileIn);
+      e = (saveData) in.readObject();
+      in.close();
+      fileIn.close();
+    } catch (IOException i) {
+      e = new saveData(false);
+      return;
+    } catch (ClassNotFoundException c) {
+      e = new saveData(false);
+      return;
+    }
+
+    e.didLoad = true;
+    musicDirectory = e.musicPath;
+
+  }
 
 };
