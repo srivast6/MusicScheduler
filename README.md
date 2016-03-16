@@ -1,5 +1,5 @@
 # About
-MusicSchedule was developed by the members of Team 15 for the CS 408 class of Spring 2016. This project was developed in a Linux/OSX based environment. Currently, this project can be build and run in this type of environmet.
+MusicSchedule was developed by the members of Team 15 for the CS 408 class of Spring 2016. This project was developed in a Linux/OSX based environment. Currently, this project can be built and run in this type of environmet.
 
 # Source Files
 All of the source files are in the following folders
@@ -18,7 +18,7 @@ A script, ````run.sh````, was created to compile and run the MusicScheduler proj
 2. Execute ````$ ./run.sh````
 
 # Notes
-- Before committing to the repo remove all class files from the classes directory.
--- Execute ````$ make clean````
+- Before committing to the repo remove all class files from the classes directory. 
+  - Execute ````$ make clean````.
 
 - If a new .java file is added to the sources folder, make sure to add it to the CLASSES macro in the makefile.
