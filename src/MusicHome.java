@@ -6,6 +6,8 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.Dimension;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -33,6 +35,10 @@ import javax.swing.ListSelectionModel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.event.ChangeListener;
+import javax.swing.JSlider;
+import javax.swing.SwingConstants;
+import javax.swing.event.ChangeEvent;
 
 import com.sun.glass.events.KeyEvent;
 
@@ -213,6 +219,30 @@ public class MusicHome {
         player.selectDirectory();
       }
     });
+
+    //Volume Slider
+    try{
+      int   initValue = (int) (Audio.getMasterOutputVolume() * 100);
+
+      final JSlider volume = new JSlider(SwingConstants.HORIZONTAL);
+      Dimension size = volume.getPreferredSize();
+      size.height /= 2;
+      volume.setPreferredSize(size);
+      volume.setValue(initValue);
+
+      volume.addChangeListener(new ChangeListener() {
+        public void stateChanged(ChangeEvent e) {
+          Audio.setMasterOutputMute(false);
+          float normalizedVolume = (float) (((JSlider)e.getSource()).getValue() / (float) 100.00);
+          Audio.setMasterOutputVolume(normalizedVolume);
+        }
+      });
+
+      musicControlPanel.add(volume);
+    }
+    catch(Exception volumeSliderException) {
+      volumeSliderException.printStackTrace();
+    }
 
     musicControlPanel.add(play);
     musicControlPanel.add(pause);
