@@ -33,9 +33,13 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JSlider;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
 import javax.swing.Timer;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -174,9 +178,9 @@ public class MusicHome {
     }
 
     mainframe = new JFrame("Beefed Up Music Player");
-    mainframe.setSize(400, 400);
+    mainframe.setSize(600, 400);
     mainframe.setLayout(new BorderLayout());
-    mainframe.setMinimumSize(new Dimension(400, 400));
+    mainframe.setMinimumSize(new Dimension(600, 400));
 
     mainframe.addComponentListener(new ComponentAdapter() {
       public void componentResized(ComponentEvent evt) {
@@ -276,6 +280,34 @@ public class MusicHome {
 
     musicControlPanel.add(play);
     musicControlPanel.add(pause);
+
+    try {
+      int initValue = (int) (Audio.getMasterOutputVolume() * 100);
+
+      final JSlider volume = new JSlider(SwingConstants.HORIZONTAL);
+      Dimension size = volume.getPreferredSize();
+      size.height /= 1.8;
+      size.width *= .80;
+      volume.setPreferredSize(size);
+      volume.setValue(initValue);
+
+      volume.addChangeListener(new ChangeListener() {
+        public void stateChanged(ChangeEvent e) {
+          Audio.setMasterOutputMute(false);
+          float normalizedVolume = (float) (((JSlider) e.getSource()).getValue() / (float) 100.00);
+          Audio.setMasterOutputVolume(normalizedVolume);
+        }
+      });
+
+      volume.setBorder(new EmptyBorder(14, 0, 14, 0));
+
+      musicControlPanel.add(volume);
+    } catch (Exception volumeSliderException) {
+      volumeSliderException.printStackTrace();
+    }
+
+
+
   }
 
   private void currentSong() {
