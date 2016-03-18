@@ -31,6 +31,10 @@ public class MusicPlayer {
     playing = listener;
   }
 
+  public String getSongName() {
+    return song.getName();
+  }
+
   public boolean isPlaying() {
     return playing.getFlag();
   }
