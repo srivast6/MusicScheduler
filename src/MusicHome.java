@@ -275,6 +275,7 @@ public class MusicHome {
           }
           // Stop the song
           else {
+            songQueue.clear();
             player.stop();
           }
         } else {
@@ -432,7 +433,7 @@ public class MusicHome {
     next.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-
+        player.stop();
       }
     });
 
@@ -472,6 +473,8 @@ public class MusicHome {
       @Override
       public void actionPerformed(ActionEvent e) {
         Random gen = new Random();
+        Random seed = new Random();
+        gen.setSeed(seed.nextLong());
         ArrayList<File> tempQueue = new ArrayList<File>();
         tempQueue = (ArrayList<File>) songQueue.clone();
         songQueue.clear();
