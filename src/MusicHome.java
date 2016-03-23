@@ -44,9 +44,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-
 import com.sun.glass.events.KeyEvent;
-
+import java.awt.event.KeyEvent;
 
 /**
  * Created by gauravsrivastava on 2/6/16.
@@ -744,7 +743,8 @@ public class MusicHome {
     newSchedule.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent event) {
-        System.exit(0);
+    	  PlaylistScheduleGUI p = new PlaylistScheduleGUI();
+    	  p.prepareGUI();
       }
     });
     schedule.add(newSchedule);
@@ -797,7 +797,7 @@ public class MusicHome {
     return songNames;
   }
 
-  private String[] getPlaylistDirectory() {
+  public String[] getPlaylistDirectory() {
     String[] directories = new String[0];
 
     if (!e.didLoad) {
