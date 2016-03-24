@@ -1,11 +1,8 @@
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -37,6 +34,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
+import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.Timer;
@@ -147,6 +145,7 @@ public class MusicHome {
           heading.setVisible(true);
           nowPlaying.setText(player.getSongName());
           pause.setVisible(true);
+          next.setVisible(true);
           play.setIcon(stopIcon);
         } else {
 
@@ -161,6 +160,7 @@ public class MusicHome {
           pause.setVisible(false);
           pause.setIcon(pauseIcon);
           play.setIcon(playIcon);
+          next.setVisible(false);
         }
       }
     };
@@ -194,20 +194,6 @@ public class MusicHome {
     mainframe.setSize(600, 400);
     mainframe.setLayout(new BorderLayout());
     mainframe.setMinimumSize(new Dimension(600, 400));
-
-    mainframe.addComponentListener(new ComponentAdapter() {
-      public void componentResized(ComponentEvent evt) {
-        Component c = (Component) evt.getSource();
-
-        System.out.println(c.getBounds());
-      }
-
-      public void componentMoved(ComponentEvent evt) {
-        Component c = (Component) evt.getSource();
-        System.out.println(c.getBounds());
-      }
-
-    });
 
     addMainPanel();
     mainframe.addWindowListener(new WindowAdapter() {
@@ -274,7 +260,9 @@ public class MusicHome {
           // Stop the song
           else {
             songQueue.clear();
+            refreshQueue();
             player.stop();
+            player.setSong(null);
           }
         } else {
           JOptionPane.showMessageDialog(null, "Select a song to play");
@@ -385,8 +373,6 @@ public class MusicHome {
     queueTitle = new JLabel("Queue");
     queueTitle.setBorder(new EmptyBorder(4, 75, 0, 75));
 
-    // Reloading Queue into the UI
-    System.out.println("Current Queue: ");
     queuemodel = new DefaultListModel<String>();
     for (int i = 0; i < songQueue.size(); i++) {
       queuemodel.add(i, (i + 1) + ".  " + songQueue.get(i).getName());
@@ -427,6 +413,9 @@ public class MusicHome {
     next.setBorder(BorderFactory.createEmptyBorder());
     next.setContentAreaFilled(false);
     next.setBorder(new EmptyBorder(4, 10, 4, 4));
+    if (player == null || !player.isPlaying()) {
+      next.setVisible(false);
+    }
 
     next.addActionListener(new ActionListener() {
       @Override
@@ -456,8 +445,10 @@ public class MusicHome {
     delete.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        songQueue.remove(queuelist.getSelectedIndex());
-        refreshQueue();
+        if (!songQueue.isEmpty()) {
+          songQueue.remove(queuelist.getSelectedIndex());
+          refreshQueue();
+        }
       }
     });
 
@@ -763,9 +754,69 @@ public class MusicHome {
     });
     alarm.add(newAlarm);
 
+    // ALARM MENUBAR ITEM
+    JMenu aboutMenu = new JMenu("About");
+    aboutMenu.setMnemonic(KeyEvent.VK_F);
+
+    aboutMenu.addMouseListener(new MouseListener() {
+
+      @Override
+      public void mouseClicked(MouseEvent e) {
+        JFrame about = new JFrame("About");
+        about.setSize(280, 170);
+        about.setLayout(new BorderLayout());
+        about.setResizable(false);
+
+        about.addWindowListener(new WindowAdapter() {
+          public void windowClosing(WindowEvent windowEvent) {
+            about.removeAll();
+          }
+        });
+
+        JPanel content = new JPanel(new BorderLayout());
+        JLabel title = new JLabel("Developers");
+        title.setBorder(new EmptyBorder(4, 110, 4, 0));
+        JTextArea developers =
+            new JTextArea("William Vanschaik (wvanscha@purdue.edu) \n"
+                + "Joey Imburgia (jimburgi@purdue.edu) \n"
+                + "Santiago Abondano (sabonda@purdue.edu) \n"
+                + "Rachel Gully (rgully@purdue.edu) \n"
+                + "Gaurav Srivastava (srivast6@purdue.edu) \n");
+        developers.setEditable(false);
+        developers.setBorder(new EmptyBorder(8, 8, 8, 8));
+
+        JLabel icons = new JLabel("Icons by Flaticons.com");
+        icons.setBorder(new EmptyBorder(4, 70, 4, 0));
+
+        content.add(title, BorderLayout.NORTH);
+        content.add(developers, BorderLayout.CENTER);
+        content.add(icons, BorderLayout.SOUTH);
+
+        about.add(content, BorderLayout.CENTER);
+
+        about.setVisible(true);
+
+      }
+
+      @Override
+      public void mousePressed(MouseEvent e) {}
+
+      @Override
+      public void mouseReleased(MouseEvent e) {}
+
+      @Override
+      public void mouseEntered(MouseEvent e) {}
+
+      @Override
+      public void mouseExited(MouseEvent e) {}
+    });
+
+    alarm.add(newAlarm);
+
     menubar.add(file);
     menubar.add(schedule);
     menubar.add(alarm);
+    menubar.add(aboutMenu);
 
     mainframe.setJMenuBar(menubar);
   }
