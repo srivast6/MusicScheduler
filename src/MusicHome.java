@@ -6,6 +6,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
@@ -44,7 +45,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import java.awt.event.KeyEvent;
 
 /**
  * Created by gauravsrivastava on 2/6/16.
@@ -742,8 +742,8 @@ public class MusicHome {
     newSchedule.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent event) {
-    	  PlaylistScheduleGUI p = new PlaylistScheduleGUI();
-    	  p.prepareGUI();
+        PlaylistScheduleGUI p = new PlaylistScheduleGUI(playlistEntries);
+        p.prepareScheduleGUI();
       }
     });
     schedule.add(newSchedule);
