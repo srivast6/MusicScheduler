@@ -7,6 +7,17 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -35,6 +46,9 @@ public class PlaylistScheduleGUI {
 	int selectedIndex;
 	String playlistToSchedule; //stores name of playlist to be played
 	Date d;						//stores date at which the playlist should be played
+	
+	DateFormat formatter = new SimpleDateFormat("yyyy-MMM-dd HH:mm:ss");
+
 	public PlaylistScheduleGUI() {
 		// TODO Auto-generated constructor stub
 		
@@ -86,7 +100,9 @@ public class PlaylistScheduleGUI {
 				// TODO Auto-generated method stub
 				d = (Date) timeSpinner.getValue();
 				playlistToSchedule = playlistEntries.get(selectedIndex);
-				System.out.println("schedule " + playlistToSchedule + " at " + d);
+				System.out.println("schedule " + playlistToSchedule + " at " + formatter.format(d));
+				writeSchduleToFile(playlistToSchedule, d);
+				readSchdule();
 			}
 		});
 		mainPanel.add(scheduleButton);
@@ -140,7 +156,48 @@ public class PlaylistScheduleGUI {
 	public Date getDate() {
 		return d;
 	}
+	
+	private void writeSchduleToFile(String name, Date date) {
+		try {
+			File file =new File("playlistTimings.txt");
+			if(!file.exists()){
+		    	   file.createNewFile();
+		    }
+			FileWriter fw = new FileWriter(file,true);
+	    	//BufferedWriter writer give better performance
+	    	BufferedWriter bw = new BufferedWriter(fw);
+	    	String writeToFile = name + "\n" + formatter.format(date) + "\n";
+	    	bw.write(writeToFile);
+	    	System.out.print("Writing " + writeToFile);
+	    	//Closing BufferedWriter Stream
+	    	bw.close();
+		}catch(IOException ioe) {
+			System.out.println(ioe);
+		}
+	}
 
+	public void readSchdule() {
+		File file = new File("playlistTimings.txt");
+		String name;
+		Date date;
+		System.out.println("Reading");
+		try {
+			BufferedReader br = new BufferedReader(new FileReader(file));
+			String l;
+			while ((l = br.readLine()) != null) {
+				name = l;
+				date = (Date)formatter.parse(br.readLine());
+				System.out.println(name + " " + formatter.format(date));
+			}
+			br.close();
+		}catch(IOException ioe) {
+			System.out.println(ioe);
+		} catch (ParseException e) {
+			// TODO: handle exception
+			System.out.println(e);
+		}
+	}
+	
 	/*
 	public static void main(String[] args) {
 	     PlaylistScheduleGUI p = new PlaylistScheduleGUI();
