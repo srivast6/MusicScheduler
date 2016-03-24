@@ -1,14 +1,24 @@
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FilenameFilter;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.Random;
 
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
@@ -24,51 +34,99 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSlider;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
+import javax.swing.Timer;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-
 import com.sun.glass.events.KeyEvent;
-
+import java.awt.event.KeyEvent;
 
 /**
  * Created by gauravsrivastava on 2/6/16.
  */
 public class MusicHome {
 
+  // JFrames
   private JFrame mainframe;
+
+  // Panels
   private JPanel controlPanel;
   private JPanel musicControlPanel;
   private JPanel nowPlayingPanel;
   private JPanel mainPanel;
+  private JPanel queuePanel;
+  private JScrollPane songsScrollPane;
+  private JScrollPane playlistScrollPane;
+  private JScrollPane queueScrollPane;
+
+  // Buttons
   private JButton play;
   private JButton pause;
-  private JButton dir;
+  private JButton next;
+  private JButton top;
+  private JButton shuffle;
+  private JButton delete;
+  private JButton showQueue;
+
+  // Labels
   private JLabel heading;
   private JLabel nowPlaying;
+  private JLabel queueTitle;
   private JList playlist;
   private JList songlist;
+  private JList queuelist;
+  private boolean viewQueue;
 
+  // Lists
+  private ArrayList<File> songQueue;
+  private ArrayList<String> playlistEntries;
+  private DefaultListModel<String> listmodel;
+  private DefaultListModel<String> queuemodel;
+  ArrayList<String> songNames;
+  private String[] playlistNames;
+
+
+  // Music Player Requirements
   private String songName;
   private MusicPlayer player;
-
   private File musicDirectory;
 
-  ImageIcon pauseIcon;
-  ImageIcon playIcon;
-  ImageIcon stopIcon;
+
+  // Images
+  private ImageIcon pauseIcon;
+  private ImageIcon playIcon;
+  private ImageIcon stopIcon;
+  private ImageIcon leftIcon;
+  private ImageIcon rightIcon;
+  private ImageIcon nextIcon;
+  private ImageIcon deleteIcon;
+  private ImageIcon topIcon;
+  private ImageIcon shuffleIcon;
 
   // Required for event and change listeners
   private BooleanChangeListener listener;
   private BooleanEventListener isPlaying;
 
-  ArrayList<String> playlistEntries;
-  DefaultListModel<String> listmodel;
-  String[] playlistNames;
+
+  // Indexes
   int selectedIndex = 0;
+  int maxIndex = 0;
+
+  /*
+   * Startup Constructor
+   */
 
   public MusicHome() {
+
+    songQueue = new ArrayList<File>();
+    viewQueue = false;
+    loadProfile();
     prepareGUI();
     prepareEventListener();
     player = new MusicPlayer(isPlaying);
@@ -88,15 +146,19 @@ public class MusicHome {
         if (event.getDispatcher().getFlag()) {
 
           heading.setVisible(true);
-          nowPlaying.setText(songName);
-
+          nowPlaying.setText(player.getSongName());
           pause.setVisible(true);
           play.setIcon(stopIcon);
         } else {
 
+          if (!songQueue.isEmpty()) {
+            player.setSong(songQueue.remove(0));
+            refreshQueue();
+            player.play(-1);
+          }
+
           heading.setVisible(false);
           nowPlaying.setText("");
-
           pause.setVisible(false);
           pause.setIcon(pauseIcon);
           play.setIcon(playIcon);
@@ -118,14 +180,36 @@ public class MusicHome {
       pauseIcon = new ImageIcon(ImageIO.read(new File("./images/pause.png")));
       playIcon = new ImageIcon(ImageIO.read(new File("./images/play.png")));
       stopIcon = new ImageIcon(ImageIO.read(new File("./images/stop.png")));
+      leftIcon = new ImageIcon(ImageIO.read(new File("./images/left.png")));
+      rightIcon = new ImageIcon(ImageIO.read(new File("./images/right.png")));
+      nextIcon = new ImageIcon(ImageIO.read(new File("./images/next.png")));
+      deleteIcon = new ImageIcon(ImageIO.read(new File("./images/delete.png")));
+      topIcon = new ImageIcon(ImageIO.read(new File("./images/top.png")));
+      shuffleIcon = new ImageIcon(ImageIO.read(new File("./images/shuffle.png")));
 
     } catch (Exception e) {
       e.printStackTrace();
     }
 
     mainframe = new JFrame("Beefed Up Music Player");
-    mainframe.setSize(400, 400);
+    mainframe.setSize(600, 400);
     mainframe.setLayout(new BorderLayout());
+    mainframe.setMinimumSize(new Dimension(600, 400));
+
+    mainframe.addComponentListener(new ComponentAdapter() {
+      public void componentResized(ComponentEvent evt) {
+        Component c = (Component) evt.getSource();
+
+        System.out.println(c.getBounds());
+      }
+
+      public void componentMoved(ComponentEvent evt) {
+        Component c = (Component) evt.getSource();
+        System.out.println(c.getBounds());
+      }
+
+    });
+
     addMainPanel();
     mainframe.addWindowListener(new WindowAdapter() {
       public void windowClosing(WindowEvent windowEvent) {
@@ -133,8 +217,6 @@ public class MusicHome {
       }
     });
 
-
-    createMenuBar();
     mainframe.setVisible(true);
   }
 
@@ -144,8 +226,27 @@ public class MusicHome {
     addControlPanel();
     addPlaylistPanel();
     addSongListPanel();
+    createMenuBar();
     mainframe.add(mainPanel, BorderLayout.CENTER);
 
+  }
+
+  private void refreshQueue() {
+    mainframe.remove(queuePanel);
+    controlPanel.remove(showQueue);
+    queueControl();
+    controlPanel.add(showQueue, BorderLayout.EAST);
+    mainframe.revalidate();
+    mainframe.repaint();
+  }
+
+
+  // used primarily to update view when changing directories
+  private void refreshView() {
+    mainframe.remove(mainPanel);
+    addMainPanel();
+    mainframe.revalidate();
+    mainframe.repaint();
   }
 
   private void musicControl() {
@@ -160,6 +261,12 @@ public class MusicHome {
     play.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
+
+        if (!songQueue.isEmpty() && !player.songSelected()) {
+          player.setSong(songQueue.remove(0));
+          refreshQueue();
+        }
+
         if (player.songSelected()) {
           // Play the song
           if (!player.isPlaying()) {
@@ -167,6 +274,7 @@ public class MusicHome {
           }
           // Stop the song
           else {
+            songQueue.clear();
             player.stop();
           }
         } else {
@@ -193,23 +301,47 @@ public class MusicHome {
       }
     });
 
-    dir = new JButton("Select Directory");
-    dir.addActionListener(new ActionListener() {
-      @Override
-      public void actionPerformed(ActionEvent e) {
-        player.selectDirectory();
-      }
-    });
-
     musicControlPanel.add(play);
     musicControlPanel.add(pause);
-    // musicControlPanel.add(dir);
+
+    try {
+      int initValue = (int) (Audio.getMasterOutputVolume() * 100);
+      final JSlider volume = new JSlider(SwingConstants.HORIZONTAL);
+      Dimension size = volume.getPreferredSize();
+      size.height /= 1.8;
+      size.width *= .80;
+      volume.setPreferredSize(size);
+      volume.setValue(initValue);
+
+
+      volume.addChangeListener(new ChangeListener() {
+        public void stateChanged(ChangeEvent e) {
+
+          if (volume.getValue() == 0) {
+            Audio.setMasterOutputMute(true);
+            Audio.setMasterOutputVolume(0);
+          } else {
+            Audio.setMasterOutputMute(false);
+            float normalizedVolume =
+                (float) (((JSlider) e.getSource()).getValue() / (float) 100.00);
+            Audio.setMasterOutputVolume(normalizedVolume);
+          }
+        }
+      });
+
+      volume.setBorder(new EmptyBorder(14, 0, 14, 0));
+
+      musicControlPanel.add(volume);
+    } catch (Exception volumeSliderException) {
+      volumeSliderException.printStackTrace();
+    }
+
   }
 
   private void currentSong() {
     nowPlayingPanel = new JPanel(new BorderLayout());
     nowPlayingPanel.setSize(400, 200);
-    heading = new JLabel("Now Playing");
+    heading = new JLabel("Now Playing: ");
     heading.setVisible(false);
 
     nowPlaying = new JLabel("");
@@ -220,12 +352,14 @@ public class MusicHome {
   private void addControlPanel() {
     musicControl();
     currentSong();
+    queueControl();
     controlPanel = new JPanel(new BorderLayout());
     controlPanel.setAlignmentX(JPanel.CENTER_ALIGNMENT);
     controlPanel.setSize(800, 200);
     controlPanel.setBorder(BorderFactory.createLineBorder(Color.black));
     controlPanel.add(musicControlPanel, BorderLayout.WEST);
-    controlPanel.add(nowPlayingPanel, BorderLayout.EAST);
+    controlPanel.add(nowPlayingPanel, BorderLayout.CENTER);
+    controlPanel.add(showQueue, BorderLayout.EAST);
 
     musicControlPanel.setBorder(new EmptyBorder(4, 16, 4, 16));
     nowPlayingPanel.setBorder(new EmptyBorder(4, 16, 4, 16));
@@ -233,16 +367,173 @@ public class MusicHome {
     mainPanel.add(controlPanel, BorderLayout.SOUTH);
   }
 
+
+
+  private void queueControl() {
+
+    showQueue = new JButton(rightIcon);
+    showQueue.setBorder(BorderFactory.createEmptyBorder());
+    showQueue.setContentAreaFilled(false);
+
+    // Create Queue Panel
+
+    JPanel containerPanel = new JPanel(new BorderLayout());
+    containerPanel.setBorder(BorderFactory.createLineBorder(Color.black));
+
+    queuePanel = new JPanel(new BorderLayout());
+    queuePanel.setVisible(false);
+
+    queueTitle = new JLabel("Queue");
+    queueTitle.setBorder(new EmptyBorder(4, 75, 0, 75));
+
+    // Reloading Queue into the UI
+    System.out.println("Current Queue: ");
+    queuemodel = new DefaultListModel<String>();
+    for (int i = 0; i < songQueue.size(); i++) {
+      queuemodel.add(i, (i + 1) + ".  " + songQueue.get(i).getName());
+    }
+
+    queuelist = new JList<String>(queuemodel);
+    queuelist.setBorder(new EmptyBorder(4, 4, 4, 4));
+
+    containerPanel.add(queueTitle, BorderLayout.NORTH);
+
+    if (viewQueue) {
+      showQueue.setIcon(leftIcon);
+      mainframe.setSize((mainframe.getWidth()), mainframe.getHeight());
+      queuePanel.setVisible(true);
+      queuePanel.repaint();
+      queuePanel.validate();
+      viewQueue = true;
+    } else {
+      showQueue.setIcon(rightIcon);
+      mainframe.setSize((mainframe.getWidth() - 220), mainframe.getHeight());
+      queuePanel.setVisible(false);
+      queuePanel.repaint();
+      queuePanel.validate();
+      viewQueue = false;
+    }
+
+    queueScrollPane = new JScrollPane(queuelist);
+    queueScrollPane.setPreferredSize(new Dimension(220, mainframe.getHeight()));
+    queueScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+    queueScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+
+    containerPanel.add(queueScrollPane, BorderLayout.CENTER);
+    queuePanel.add(containerPanel, BorderLayout.CENTER);
+
+    JPanel queueControls = new JPanel();
+
+    next = new JButton(nextIcon);
+    next.setBorder(BorderFactory.createEmptyBorder());
+    next.setContentAreaFilled(false);
+    next.setBorder(new EmptyBorder(4, 10, 4, 4));
+
+    next.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        player.stop();
+      }
+    });
+
+    top = new JButton(topIcon);
+    top.setBorder(BorderFactory.createEmptyBorder());
+    top.setContentAreaFilled(false);
+    top.setBorder(new EmptyBorder(4, 10, 4, 10));
+
+    top.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        songQueue.add(0, songQueue.remove(queuelist.getSelectedIndex()));
+        refreshQueue();
+      }
+    });
+
+    delete = new JButton(deleteIcon);
+    delete.setBorder(BorderFactory.createEmptyBorder());
+    delete.setContentAreaFilled(false);
+    delete.setBorder(new EmptyBorder(4, 4, 4, 10));
+
+    delete.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        songQueue.remove(queuelist.getSelectedIndex());
+        refreshQueue();
+      }
+    });
+
+    shuffle = new JButton(shuffleIcon);
+    shuffle.setBorder(BorderFactory.createEmptyBorder());
+    shuffle.setContentAreaFilled(false);
+    shuffle.setBorder(new EmptyBorder(4, 10, 4, 10));
+
+    shuffle.addActionListener(new ActionListener() {
+      @SuppressWarnings("unchecked")
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        Random gen = new Random();
+        Random seed = new Random();
+        gen.setSeed(seed.nextLong());
+        ArrayList<File> tempQueue = new ArrayList<File>();
+        tempQueue = (ArrayList<File>) songQueue.clone();
+        songQueue.clear();
+
+        while (!tempQueue.isEmpty()) {
+          songQueue.add(tempQueue.remove(gen.nextInt(tempQueue.size())));
+        }
+        refreshQueue();
+      }
+    });
+
+
+    queueControls.add(delete);
+    queueControls.add(top);
+    queueControls.add(shuffle);
+    queueControls.add(next);
+    queueControls.setBorder(BorderFactory.createLineBorder(Color.black));
+
+    queuePanel.add(queueControls, BorderLayout.SOUTH);
+
+    showQueue.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+
+        if (!viewQueue) {
+          showQueue.setIcon(leftIcon);
+          mainframe.setSize((mainframe.getWidth() + 220), mainframe.getHeight());
+          queuePanel.setVisible(true);
+          mainframe.repaint();
+          mainframe.validate();
+          viewQueue = true;
+        } else {
+
+          showQueue.setIcon(rightIcon);
+          mainframe.setSize((mainframe.getWidth() - 220), mainframe.getHeight());
+          queuePanel.setVisible(false);
+          mainframe.repaint();
+          mainframe.validate();
+          viewQueue = false;
+        }
+
+      }
+    });
+
+    mainframe.add(queuePanel, BorderLayout.EAST);
+  }
+
+  /*
+   * Create Playlist Panel
+   */
+
   private void addPlaylistPanel() {
     playlistEntries = new ArrayList<>();
-
     playlistNames = getPlaylistDirectory();
+
     for (int i = 0; i < playlistNames.length; i++) {
       playlistEntries.add(playlistNames[i]);
     }
 
     JPanel playlistPanel = new JPanel(new BorderLayout());
-    playlistPanel.setSize(600, 600);
     playlistPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
     JLabel heading = new JLabel("Playlist");
     playlist = new JList(playlistEntries.toArray());
@@ -253,55 +544,33 @@ public class MusicHome {
       public void valueChanged(ListSelectionEvent e) {
         int plistIndex = playlist.getSelectedIndex();
         selectedIndex = plistIndex;
-        System.out.print(plistIndex);
 
+        songNames.clear();
         listmodel.clear();
-        ArrayList<String> s = changeSonglist();
-        for (int i = 0; i < s.size(); i++) {
-          listmodel.addElement(s.get(i));
+        songNames = changeSonglist();
+        for (int i = 0; i < songNames.size(); i++) {
+          listmodel.addElement((i + 1) + ".  " + songNames.get(i));
         }
 
         songlist.revalidate();
         songlist.repaint();
       }
     });
-    playlistPanel.add(heading, BorderLayout.NORTH);
-    playlistPanel.add(playlist, BorderLayout.CENTER);
-    heading.setBorder(new EmptyBorder(4, 16, 0, 8));
-    playlist.setBorder(new EmptyBorder(4, 16, 0, 16));
 
-    mainPanel.add(playlistPanel, BorderLayout.WEST);
-  }
-
-  private void addSongListPanel() {
-    JPanel songListPanel = new JPanel(new BorderLayout());
-    songListPanel.setSize(600, 600);
-    songListPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-    JLabel heading = new JLabel("Song List");
-
-    listmodel = new DefaultListModel<>();
-
-    ArrayList<String> s = changeSonglist();
-    for (int i = 0; i < s.size(); i++) {
-      listmodel.addElement(s.get(i));
-    }
-
-    songlist = new JList<String>(listmodel);
-    songlist.addMouseListener(new MouseListener() {
+    playlist.addMouseListener(new MouseListener() {
       @Override
       public void mouseClicked(MouseEvent e) {
-        if (e.getClickCount() == 2) {
-          File selectedSong =
-              new File(musicDirectory.getAbsolutePath() + "/" + playlist.getSelectedValue() + "/"
-                  + songlist.getSelectedValue());
-
-          songName = (String) songlist.getSelectedValue();
-
-          if (player.isPlaying()) {
-            player.stop();
+        if (e.getClickCount() == 3) {
+          for (int i = 0; i < songNames.size(); i++) {
+            File selectedSong =
+                new File(musicDirectory.getAbsolutePath() + "/"
+                    + playlistNames[playlist.getSelectedIndex()] + "/" + songNames.get(i));
+            songQueue.add(selectedSong);
+            if (!viewQueue) {
+              showQueue.doClick();
+            }
+            refreshQueue();
           }
-          player.setSong(selectedSong);
-          player.play(-1);
         }
       }
 
@@ -316,13 +585,118 @@ public class MusicHome {
 
       @Override
       public void mouseExited(MouseEvent e) {}
+
     });
 
-    heading.setBorder(new EmptyBorder(4, 16, 0, 16));
-    songlist.setBorder(new EmptyBorder(4, 16, 0, 16));
+    playlistPanel.add(heading, BorderLayout.NORTH);
+
+    playlistScrollPane = new JScrollPane(playlist);
+    playlistScrollPane.setPreferredSize(new Dimension(120, 300));
+    playlistScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+    playlistScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+    playlistPanel.add(playlistScrollPane, BorderLayout.CENTER);
+
+    heading.setBorder(new EmptyBorder(4, 26, 0, 8));
+    playlist.setBorder(new EmptyBorder(4, 4, 0, 4));
+
+
+
+    mainPanel.add(playlistPanel, BorderLayout.WEST);
+  }
+
+  private void addSongListPanel() {
+
+    JPanel songListPanel = new JPanel(new BorderLayout());
+    songListPanel.setSize(400, 400);
+    songListPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+    JLabel heading = new JLabel("Song List");
+
+    listmodel = new DefaultListModel<>();
+
+    songNames = changeSonglist();
+    for (int i = 0; i < songNames.size(); i++) {
+      listmodel.addElement((i + 1) + ".  " + songNames.get(i));
+    }
+
+    songlist = new JList<String>(listmodel);
+    songlist.addMouseListener(new MouseListener() {
+      @Override
+      public void mouseClicked(MouseEvent e) {
+        if (e.getClickCount() == 2) {
+          File selectedSong =
+              new File(musicDirectory.getAbsolutePath() + "/"
+                  + playlistNames[playlist.getSelectedIndex()] + "/"
+                  + songNames.get(songlist.getSelectedIndex()));
+          songName = (String) songlist.getSelectedValue();
+
+          if (player.isPlaying()) {
+            player.stop();
+          }
+          player.setSong(selectedSong);
+          player.play(-1);
+        }
+        if (e.getClickCount() == 1) {
+          File selectedSong =
+              new File(musicDirectory.getAbsolutePath() + "/"
+                  + playlistNames[playlist.getSelectedIndex()] + "/"
+                  + songNames.get(songlist.getSelectedIndex()));
+
+          songName = (String) songlist.getSelectedValue();
+          if (!player.isPlaying())
+            player.setSong(selectedSong);
+        }
+      }
+
+      private Timer timer;
+
+      @Override
+      public void mousePressed(MouseEvent e) {
+        timer = new Timer(500, new ActionListener() {
+          public void actionPerformed(ActionEvent e) {
+
+            File selectedSong =
+                new File(musicDirectory.getAbsolutePath() + "/"
+                    + playlistNames[playlist.getSelectedIndex()] + "/"
+                    + songNames.get(songlist.getSelectedIndex()));
+
+            songName = (String) songlist.getSelectedValue();
+
+            int index = playlist.getSelectedIndex();
+            songQueue.add(selectedSong);
+            refreshQueue();
+            if (!viewQueue) {
+              showQueue.doClick();
+            }
+            playlist.setSelectedIndex(index);
+
+          }
+        });
+        timer.start();
+      }
+
+      @Override
+      public void mouseReleased(MouseEvent e) {
+        if (timer != null) {
+          timer.stop();
+        }
+      }
+
+      @Override
+      public void mouseEntered(MouseEvent e) {}
+
+      @Override
+      public void mouseExited(MouseEvent e) {}
+    });
+
+    heading.setBorder(new EmptyBorder(4, 8, 0, 16));
+    songlist.setBorder(new EmptyBorder(4, 8, 0, 4));
 
     songListPanel.add(heading, BorderLayout.NORTH);
-    songListPanel.add(songlist, BorderLayout.CENTER);
+
+    songsScrollPane = new JScrollPane(songlist);
+    songsScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+    songsScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+    songListPanel.add(songsScrollPane, BorderLayout.CENTER);
 
     mainPanel.add(songListPanel, BorderLayout.CENTER);
   }
@@ -342,7 +716,8 @@ public class MusicHome {
     selectDirectory.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent event) {
-        player.selectDirectory();
+        e.didLoad = false;
+        refreshView();
       }
     });
     file.add(selectDirectory);
@@ -368,7 +743,8 @@ public class MusicHome {
     newSchedule.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent event) {
-        System.exit(0);
+    	  PlaylistScheduleGUI p = new PlaylistScheduleGUI();
+    	  p.prepareGUI();
       }
     });
     schedule.add(newSchedule);
@@ -396,8 +772,12 @@ public class MusicHome {
   }
 
 
-
   private File[] getSongs() {
+    if (playlistNames.length == 0) {
+      File[] empty = new File[0];
+      return empty;
+    }
+
     File dir = new File(musicDirectory.getAbsolutePath() + "/" + playlistNames[selectedIndex]);
     File[] songList = dir.listFiles(new FilenameFilter() {
       public boolean accept(File dir, String name) {
@@ -409,6 +789,7 @@ public class MusicHome {
 
   private ArrayList<String> changeSonglist() {
     File[] songs = getSongs();
+
     ArrayList<String> songNames = new ArrayList<>();
     for (int i = 0; i < songs.length; i++) {
       songNames.add(songs[i].getName());
@@ -416,14 +797,33 @@ public class MusicHome {
     return songNames;
   }
 
-  private String[] getPlaylistDirectory() {
-    musicDirectory = selectMusicDirectory();
-    String[] directories = musicDirectory.list(new FilenameFilter() {
-      @Override
-      public boolean accept(File current, String name) {
-        return new File(current, name).isDirectory();
+  public String[] getPlaylistDirectory() {
+    String[] directories = new String[0];
+
+    if (!e.didLoad) {
+      File tempDirectory = selectMusicDirectory();
+      if (tempDirectory != null) {
+        musicDirectory = tempDirectory;
+        e.setPath(musicDirectory);
+        saveProfile();
       }
-    });
+    }
+    try {
+      directories = musicDirectory.list(new FilenameFilter() {
+        @Override
+        public boolean accept(File current, String name) {
+          return new File(current, name).isDirectory();
+        }
+      });
+    } catch (Exception ex) {
+      e.didLoad = false;
+      getPlaylistDirectory();
+    }
+
+    if (directories.length == 0) {
+      String[] empty = new String[0];
+      return empty;
+    }
     return directories;
   }
 
@@ -448,5 +848,40 @@ public class MusicHome {
     return selectedFile;
   }
 
+  public saveData e;
+
+  public void saveProfile() {
+    try {
+      FileOutputStream fileOut = new FileOutputStream("/tmp/saveData.ser");
+      ObjectOutputStream out = new ObjectOutputStream(fileOut);
+      out.writeObject(e);
+      out.close();
+      fileOut.close();
+      System.out.printf("Serialized data is saved in /tmp/saveData.ser");
+    } catch (IOException i) {
+      i.printStackTrace();
+    }
+  }
+
+  public void loadProfile() {
+    e = null;
+    try {
+      FileInputStream fileIn = new FileInputStream("/tmp/saveData.ser");
+      ObjectInputStream in = new ObjectInputStream(fileIn);
+      e = (saveData) in.readObject();
+      in.close();
+      fileIn.close();
+    } catch (IOException i) {
+      e = new saveData(false);
+      return;
+    } catch (ClassNotFoundException c) {
+      e = new saveData(false);
+      return;
+    }
+
+    e.didLoad = true;
+    musicDirectory = e.musicPath;
+
+  }
 
 };
