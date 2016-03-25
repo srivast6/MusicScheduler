@@ -9,6 +9,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
@@ -16,6 +17,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Random;
 
 import javax.imageio.ImageIO;
@@ -23,6 +25,7 @@ import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -43,6 +46,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
  * Created by gauravsrivastava on 2/6/16.
@@ -51,10 +55,12 @@ public class MusicHome {
 
   // JFrames
   private JFrame mainframe;
+  private JFrame alarmframe;
 
   // Panels
   private JPanel controlPanel;
   private JPanel musicControlPanel;
+  private JPanel alarmControlPanel;
   private JPanel nowPlayingPanel;
   private JPanel mainPanel;
   private JPanel queuePanel;
@@ -70,6 +76,8 @@ public class MusicHome {
   private JButton shuffle;
   private JButton delete;
   private JButton showQueue;
+  private JButton btnAddAlarm;
+  private JButton btnRemoveAlarm;
 
   // Labels
   private JLabel heading;
@@ -81,7 +89,10 @@ public class MusicHome {
   private boolean viewQueue;
 
   // Lists
+  JList listAlarms;
   private ArrayList<File> songQueue;
+  private ArrayList<Alarm> alarmList;
+  private ArrayList<ScheduledAlarms> scheduledAlarmsList;
   private ArrayList<String> playlistEntries;
   private DefaultListModel<String> listmodel;
   private DefaultListModel<String> queuemodel;
@@ -120,6 +131,8 @@ public class MusicHome {
    */
 
   public MusicHome() {
+	alarmList = new ArrayList<Alarm>(); 
+	scheduledAlarmsList = new ArrayList<ScheduledAlarms>();
 
     songQueue = new ArrayList<File>();
     viewQueue = false;
@@ -749,7 +762,8 @@ public class MusicHome {
     newAlarm.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent event) {
-        System.exit(0);
+    	  alarmSetGui();
+        //System.exit(0);
       }
     });
     alarm.add(newAlarm);
@@ -897,6 +911,16 @@ public class MusicHome {
     }
     return selectedFile;
   }
+  
+  public File selectMusicDirectoryFile() {
+	   
+	    JFileChooser fileChooser = new JFileChooser();
+	    FileNameExtensionFilter filter = new FileNameExtensionFilter("MP3 File","mp3");
+	    fileChooser.setFileFilter(filter);
+	    fileChooser.showOpenDialog(fileChooser);
+	    File file = fileChooser.getSelectedFile();
+	    return file;
+	  }
 
   public saveData e;
 
@@ -932,6 +956,114 @@ public class MusicHome {
     e.didLoad = true;
     musicDirectory = e.musicPath;
 
+  }
+  
+  public void alarmSetGui(){
+	  	ArrayList<String> alarmsInList = new ArrayList<String>();
+	  	for(int i = 0; i < alarmList.size(); i++){
+	  		alarmsInList.add(alarmList.get(i).getAlarmTime());
+	  	}
+	  	Calendar nowDate = Calendar.getInstance();
+	  	for(int i = 0; i < alarmList.size(); i++){
+	  		if(alarmList.get(i).getAlarmTimeCalendarObjectClean().before(nowDate))
+	  			alarmList.remove(i);
+	  	}
+	  	
+	  	alarmframe = new JFrame();
+	  	alarmframe.setBounds(100, 100, 450, 300);
+		
+		alarmframe.getContentPane().setLayout(null);
+		
+		Integer[] zeroThroughTwelve = {1,2,3,4,5,6,7,8,9,10,11,12};
+		Integer[] zeroThroughFiftyNine = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59};
+		String[] amOrPm = {"AM" ,"PM"};
+		
+		JComboBox comboBox = new JComboBox(zeroThroughTwelve);
+		comboBox.setBounds(50, 38, 50, 20);
+		alarmframe.getContentPane().add(comboBox);
+		
+		JComboBox comboBox_1 = new JComboBox(zeroThroughFiftyNine);
+		comboBox_1.setBounds(120, 38, 50, 20);
+		alarmframe.getContentPane().add(comboBox_1);
+		
+		JComboBox comboBox_2 = new JComboBox(amOrPm);
+		comboBox_2.setBounds(190, 38, 50, 20);
+		alarmframe.getContentPane().add(comboBox_2);
+		
+		JLabel lblHour = new JLabel("Hr");
+		lblHour.setBounds(50, 23, 46, 14);
+		alarmframe.getContentPane().add(lblHour);
+		
+		JLabel lblMin = new JLabel("Min");
+		lblMin.setBounds(120, 23, 46, 14);
+		alarmframe.getContentPane().add(lblMin);
+		
+		JLabel lblAmpm = new JLabel("Am/Pm");
+		lblAmpm.setBounds(190, 23, 46, 14);
+		alarmframe.getContentPane().add(lblAmpm);
+		
+		listAlarms = new JList(alarmsInList.toArray()); //data has type Object[]
+		listAlarms.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+		listAlarms.setLayoutOrientation(JList.HORIZONTAL_WRAP);
+		listAlarms.setVisibleRowCount(-1);
+		JScrollPane listScroller = new JScrollPane(listAlarms);
+		listScroller.setPreferredSize(new Dimension(250, 80));
+		listAlarms.setBounds(294, 40, 103, 151);
+		alarmframe.getContentPane().add(listAlarms);
+		
+		btnAddAlarm = new JButton("Add Alarm");
+		btnAddAlarm.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+					Alarm newAlarm = new Alarm();
+					
+					int hour;
+					if(comboBox_2.getSelectedItem() == "PM")
+						hour = (int) comboBox.getSelectedItem() + 12;
+					else
+						hour = (int) comboBox.getSelectedItem();
+					
+					Calendar currentTime = Calendar.getInstance();
+					newAlarm.setAlarmTimeWithInts(hour, comboBox_1.getSelectedIndex());
+					//If User tries to do for a time that has already passed make it for the next day
+					if(newAlarm.getAlarmTimeCalendarObject().before(currentTime))
+						newAlarm.addDay(1);
+					
+					newAlarm.setAlarmSound(selectMusicDirectoryFile());
+					newAlarm.setSnoozeLengthInMinutes(PromptBox.snoozeLengthPicker());
+					alarmList.add(newAlarm);
+					ScheduledAlarms schedAlarm = new ScheduledAlarms(newAlarm, player);
+					scheduledAlarmsList.add(schedAlarm);
+					alarmframe.dispatchEvent(new WindowEvent(alarmframe, WindowEvent.WINDOW_CLOSING));
+					alarmSetGui();
+			}
+		});
+		btnAddAlarm.setBounds(91, 93, 89, 23);
+		alarmframe.getContentPane().add(btnAddAlarm);
+		
+		btnRemoveAlarm = new JButton("Remove Alarm");
+		btnRemoveAlarm.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				if(!listAlarms.isSelectionEmpty()){
+					
+					//cancels timer
+					for(int i = 0; i < scheduledAlarmsList.size(); i++){
+						if(alarmList.get(listAlarms.getSelectedIndex()).getAlarmTimeCalendarObjectClean() == scheduledAlarmsList.get(i).alarmScheduled.getAlarmTimeCalendarObjectClean()){
+							scheduledAlarmsList.get(i).t.cancel();
+							scheduledAlarmsList.remove(i);
+						}
+					}
+					
+					alarmList.remove(listAlarms.getSelectedIndex());
+					
+					alarmframe.dispatchEvent(new WindowEvent(alarmframe, WindowEvent.WINDOW_CLOSING));
+					alarmSetGui();
+				}
+			}
+		});
+		btnRemoveAlarm.setBounds(286, 202, 111, 23);
+		alarmframe.getContentPane().add(btnRemoveAlarm);
+		
+		alarmframe.setVisible(true);
   }
 
 };
