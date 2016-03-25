@@ -1,3 +1,4 @@
+// Lazy includes, clean if time allows
 import java.util.*;
 import java.io.*;
 import java.nio.file.*;
@@ -13,7 +14,6 @@ public class Playlist {
 	private String name;
 	
 	
-	// Default contructor
 	public Playlist ( String name ) {
 		this.playlist = new ArrayList<String>();
 		this.position = 0;
@@ -108,7 +108,8 @@ public class Playlist {
 		} 
 	}
 	
-	// Not really used after queue was implemented in MusicHome
+	// Play implemented in other files
+	/*
 	public boolean play ( ) {
 		if ( !checkPlaylist( playlist ) ) {
 			System.out.println( "Error: Playlist not initialized" );
@@ -130,6 +131,7 @@ public class Playlist {
 		
 		return true;
 	}
+	* */
 	
 	// Save playlist to a folder based on object
 	public void save (MusicHome mh) {
@@ -151,7 +153,8 @@ public class Playlist {
 		} 
 	}
 	
-	// load playlist from a folder and set up object
+	// No longer needed with folder system
+	/*
 	public void load ( String foldername ) {
 		File path = new File( foldername );
 
@@ -178,6 +181,7 @@ public class Playlist {
 		setPosition( 0 );
     
 	}
+	* */
 	
 	
 	// main method for testing
@@ -189,18 +193,10 @@ public class Playlist {
 		p1.play();
 		p1.addSongNext("test");
 		System.out.println( "Songs: " + p1.size() );
-		while ( p1.play() ) {
-			System.out.println();
-		}
 		
 		p1.removeSong( 2 );
 		System.out.println( "Songs: " + p1.size() );
 		p1.setPosition( 0 );
-		while ( p1.play() ) {
-			System.out.println();
-		}
-		
-		//p1.save();
 		
 		p1.clear();
 		System.out.println( "Songs: " + p1.size() );

@@ -106,9 +106,11 @@ public class PlaylistScheduleGUI {
 				System.out.println("schedule " + playlistToSchedule + " at " + formatter.format(d));
 				writeSchduleToFile(playlistToSchedule, d);
 				
+				// Constuctor creates the timer thread. nothing else is neccessary.
+				// This object should be saved if the timer needs to be canceled. 
 				scheduler = new ScheduledPlay ( d, new Playlist ( playlistToSchedule ), musicHome );
 				
-				readSchdule();
+				// readSchdule();
 			}
 		});
 		mainPanel.add(scheduleButton);

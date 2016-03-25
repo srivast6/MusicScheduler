@@ -7,12 +7,13 @@ public class ScheduledPlay {
 	
 	// Main timer
 	private Timer t;
-	private Date scheduledTime;
 	// path to song or playlist
 	String file;
 	private boolean isPlaylist;
 	
 	// Class used to hold a scheduled song
+	// Not implemented directly in the gui
+	// Left in for possible functionaliy of scheduling an indivual song without using a playlist
 	class scheduledSong extends TimerTask {
 		
 		String song;
@@ -62,7 +63,6 @@ public class ScheduledPlay {
 			for ( int i = 0; i < list.getSize(); i ++ ) {
 				list.setPosition(i);
 				songQueue.add( new File (list.getCurrentSong()) );
-				//System.out.println( "Playlist song # " + list.getPosition() );
 			} 
 			musicHome.refreshQueue();
 			musicPlayer.setSong(songQueue.remove(0));
@@ -76,11 +76,10 @@ public class ScheduledPlay {
     }
 	
 	// schedule song to be played at time
+	// Not implemented directly in gui becuase functionality is coverd by playlist
 	ScheduledPlay ( Date time, String song, MusicHome mh ) {
 		t = new Timer();
-		file = song;
 		isPlaylist = false;
-		scheduledTime = time;
 		t.schedule( new scheduledSong ( song, mh ), time );
 		System.out.println( "Song scheduled for: " + time );
 	}
@@ -89,9 +88,8 @@ public class ScheduledPlay {
 	ScheduledPlay ( Date time, Playlist list, MusicHome mh ) {
 		t = new Timer();
 		isPlaylist = true;
-		scheduledTime = time;
 		t.schedule( new scheduledPlaylist ( list, mh ), time );
-		System.out.println( "Playlist scheduled for: " + time );
+		System.out.println( "Playlist \"" + list.name + "\" scheduled for: " + time );
 	}
 	
 	// Cancel current timer
@@ -99,12 +97,12 @@ public class ScheduledPlay {
 		t.cancel();
 	}
 	
-	// Basic save function to write timer details to a text file
+	// old save format
 	/* FORMAT
 	 * Song or Playlist
 	 * filename of song or playlist
 	 * date
-	 */
+	 
 	public void save ( String filename ) {
 		DateFormat df = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
 		File file = new File( filename );
@@ -130,6 +128,7 @@ public class ScheduledPlay {
 			System.out.println( "IO error " + e.getMessage() );
 		} 
 	}
+	* */
 	
 	
 	// main method for testing
@@ -137,20 +136,11 @@ public class ScheduledPlay {
 	public static void main(String [] args)	{
 		Playlist p1 = new Playlist ( "timer_test" );
 		String song = "test";
-		Date now = new Date();
-        
+
 		p1.addSong("1");
 		p1.addSong("2");
 		p1.addSong("3");
-		
-		//now.setSeconds(now.getSeconds() + 5);
-		//ScheduledPlay s1 =  new ScheduledPlay (now, song);
-		//now.setSeconds(now.getSeconds() + 5);
-		//ScheduledPlay s2 =  new ScheduledPlay (now, p1);
-		
-		// s1.save( "testTimer" );
-		
-		System.out.println("Scheduleing done");
+
 	}
 	
 }

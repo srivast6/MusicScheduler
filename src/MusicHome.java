@@ -17,8 +17,17 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
+
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.Date;
 
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
@@ -111,6 +120,10 @@ public class MusicHome {
   // Required for event and change listeners
   private BooleanChangeListener listener;
   private BooleanEventListener isPlaying;
+  
+  // formatter for reading schedules
+  DateFormat formatter = new SimpleDateFormat("yyyy-MMM-dd HH:mm:ss");
+
 
 
   // Indexes
@@ -129,6 +142,7 @@ public class MusicHome {
     prepareGUI();
     prepareEventListener();
     player = new MusicPlayer(isPlaying);
+    readSchdule();
   }
 
   public void prepareEventListener() {
@@ -899,5 +913,32 @@ public class MusicHome {
     musicDirectory = e.musicPath;
 
   }
+  
+  public void readSchdule() {
+	    MusicHome passingView = this;
+		File file = new File("playlistTimings.txt");
+		String name;
+		Date date;
+		Date now = new Date();
+		System.out.println("Reading");
+		try {
+			BufferedReader br = new BufferedReader(new FileReader(file));
+			String l;
+			while ((l = br.readLine()) != null) {
+				name = l;
+				date = (Date)formatter.parse(br.readLine());
+				if ( date.after(now) ) {
+					System.out.println(name + " " + formatter.format(date));
+					ScheduledPlay scheduler = new ScheduledPlay ( date, new Playlist ( l ), passingView );
+				}
+			}
+			br.close();
+		}catch(IOException ioe) {
+			System.out.println(ioe);
+		} catch (ParseException e) {
+			// TODO: handle exception
+			System.out.println(e);
+		}
+	}
 
 };
