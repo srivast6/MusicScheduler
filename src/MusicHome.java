@@ -9,7 +9,6 @@ import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
@@ -131,8 +130,8 @@ public class MusicHome {
    */
 
   public MusicHome() {
-	alarmList = new ArrayList<Alarm>(); 
-	scheduledAlarmsList = new ArrayList<ScheduledAlarms>();
+    alarmList = new ArrayList<Alarm>();
+    scheduledAlarmsList = new ArrayList<ScheduledAlarms>();
 
     songQueue = new ArrayList<File>();
     viewQueue = false;
@@ -563,7 +562,7 @@ public class MusicHome {
     playlist.addMouseListener(new MouseListener() {
       @Override
       public void mouseClicked(MouseEvent e) {
-        if (e.getClickCount() == 3) {
+        if (e.getClickCount() == 2) {
           for (int i = 0; i < songNames.size(); i++) {
             File selectedSong =
                 new File(musicDirectory.getAbsolutePath() + "/"
@@ -762,8 +761,8 @@ public class MusicHome {
     newAlarm.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent event) {
-    	  alarmSetGui();
-        //System.exit(0);
+        alarmSetGui();
+        // System.exit(0);
       }
     });
     alarm.add(newAlarm);
@@ -911,17 +910,36 @@ public class MusicHome {
     }
     return selectedFile;
   }
-  
+
+  public File selectAlam() {
+    // Set look and feel
+    File selectedFile = null;
+    JFileChooser fc = new JFileChooser();
+    fc.setCurrentDirectory(musicDirectory);
+    fc.setDialogTitle("Select your alarm");
+
+
+    int returnVal = fc.showOpenDialog(fc);
+    if (returnVal == JFileChooser.APPROVE_OPTION) {
+      File file = fc.getSelectedFile();
+      selectedFile = file;
+      fc.setSelectedFile(new File(""));
+    } else {
+
+    }
+    return selectedFile;
+  }
+
   public File selectMusicDirectoryFile() {
-	   
-	    JFileChooser fileChooser = new JFileChooser();
-	    fileChooser.setDialogTitle("Select your alarm sound!");
-	    FileNameExtensionFilter filter = new FileNameExtensionFilter("MP3 File","mp3");
-	    fileChooser.setFileFilter(filter);
-	    fileChooser.showOpenDialog(fileChooser);
-	    File file = fileChooser.getSelectedFile();
-	    return file;
-	  }
+
+    JFileChooser fileChooser = new JFileChooser();
+    fileChooser.setDialogTitle("Select your alarm sound!");
+    FileNameExtensionFilter filter = new FileNameExtensionFilter("MP3 File", "mp3");
+    fileChooser.setFileFilter(filter);
+    fileChooser.showOpenDialog(fileChooser);
+    File file = fileChooser.getSelectedFile();
+    return file;
+  }
 
   public saveData e;
 
@@ -958,113 +976,148 @@ public class MusicHome {
     musicDirectory = e.musicPath;
 
   }
-  
-  public void alarmSetGui(){
-	  	ArrayList<String> alarmsInList = new ArrayList<String>();
-	  	for(int i = 0; i < alarmList.size(); i++){
-	  		alarmsInList.add(alarmList.get(i).getAlarmTime());
-	  	}
-	  	Calendar nowDate = Calendar.getInstance();
-	  	for(int i = 0; i < alarmList.size(); i++){
-	  		if(alarmList.get(i).getAlarmTimeCalendarObjectClean().before(nowDate))
-	  			alarmList.remove(i);
-	  	}
-	  	
-	  	alarmframe = new JFrame();
-	  	alarmframe.setBounds(100, 100, 450, 300);
-		
-		alarmframe.getContentPane().setLayout(null);
-		
-		Integer[] zeroThroughTwelve = {1,2,3,4,5,6,7,8,9,10,11,12};
-		Integer[] zeroThroughFiftyNine = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59};
-		String[] amOrPm = {"AM" ,"PM"};
-		
-		JComboBox comboBox = new JComboBox(zeroThroughTwelve);
-		comboBox.setBounds(50, 38, 50, 20);
-		alarmframe.getContentPane().add(comboBox);
-		
-		JComboBox comboBox_1 = new JComboBox(zeroThroughFiftyNine);
-		comboBox_1.setBounds(120, 38, 50, 20);
-		alarmframe.getContentPane().add(comboBox_1);
-		
-		JComboBox comboBox_2 = new JComboBox(amOrPm);
-		comboBox_2.setBounds(190, 38, 50, 20);
-		alarmframe.getContentPane().add(comboBox_2);
-		
-		JLabel lblHour = new JLabel("Hr");
-		lblHour.setBounds(50, 23, 46, 14);
-		alarmframe.getContentPane().add(lblHour);
-		
-		JLabel lblMin = new JLabel("Min");
-		lblMin.setBounds(120, 23, 46, 14);
-		alarmframe.getContentPane().add(lblMin);
-		
-		JLabel lblAmpm = new JLabel("Am/Pm");
-		lblAmpm.setBounds(190, 23, 46, 14);
-		alarmframe.getContentPane().add(lblAmpm);
-		
-		listAlarms = new JList(alarmsInList.toArray()); //data has type Object[]
-		listAlarms.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
-		listAlarms.setLayoutOrientation(JList.HORIZONTAL_WRAP);
-		listAlarms.setVisibleRowCount(-1);
-		JScrollPane listScroller = new JScrollPane(listAlarms);
-		listScroller.setPreferredSize(new Dimension(250, 80));
-		listAlarms.setBounds(294, 40, 103, 151);
-		alarmframe.getContentPane().add(listAlarms);
-		
-		btnAddAlarm = new JButton("Add Alarm");
-		btnAddAlarm.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-					Alarm newAlarm = new Alarm();
-					
-					int hour;
-					if(comboBox_2.getSelectedItem() == "PM")
-						hour = (int) comboBox.getSelectedItem() + 12;
-					else
-						hour = (int) comboBox.getSelectedItem();
-					
-					Calendar currentTime = Calendar.getInstance();
-					newAlarm.setAlarmTimeWithInts(hour, comboBox_1.getSelectedIndex());
-					//If User tries to do for a time that has already passed make it for the next day
-					if(newAlarm.getAlarmTimeCalendarObject().before(currentTime))
-						newAlarm.addDay(1);
-					
-					newAlarm.setAlarmSound(selectMusicDirectoryFile());
-					newAlarm.setSnoozeLengthInMinutes(PromptBox.snoozeLengthPicker());
-					alarmList.add(newAlarm);
-					ScheduledAlarms schedAlarm = new ScheduledAlarms(newAlarm, player);
-					scheduledAlarmsList.add(schedAlarm);
-					alarmframe.dispatchEvent(new WindowEvent(alarmframe, WindowEvent.WINDOW_CLOSING));
-					alarmSetGui();
-			}
-		});
-		btnAddAlarm.setBounds(91, 93, 89, 23);
-		alarmframe.getContentPane().add(btnAddAlarm);
-		
-		btnRemoveAlarm = new JButton("Remove Alarm");
-		btnRemoveAlarm.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				if(!listAlarms.isSelectionEmpty()){
-					
-					//cancels timer
-					for(int i = 0; i < scheduledAlarmsList.size(); i++){
-						if(alarmList.get(listAlarms.getSelectedIndex()).getAlarmTimeCalendarObjectClean() == scheduledAlarmsList.get(i).alarmScheduled.getAlarmTimeCalendarObjectClean()){
-							scheduledAlarmsList.get(i).t.cancel();
-							scheduledAlarmsList.remove(i);
-						}
-					}
-					
-					alarmList.remove(listAlarms.getSelectedIndex());
-					
-					alarmframe.dispatchEvent(new WindowEvent(alarmframe, WindowEvent.WINDOW_CLOSING));
-					alarmSetGui();
-				}
-			}
-		});
-		btnRemoveAlarm.setBounds(286, 202, 111, 23);
-		alarmframe.getContentPane().add(btnRemoveAlarm);
-		
-		alarmframe.setVisible(true);
+
+  public void alarmSetGui() {
+    ArrayList<String> alarmsInList = new ArrayList<String>();
+    for (int i = 0; i < alarmList.size(); i++) {
+      alarmsInList.add(alarmList.get(i).getAlarmTime());
+    }
+    Calendar nowDate = Calendar.getInstance();
+    for (int i = 0; i < alarmList.size(); i++) {
+      if (alarmList.get(i).getAlarmTimeCalendarObjectClean().before(nowDate))
+        alarmList.remove(i);
+    }
+
+    alarmframe = new JFrame("Alarms");
+    alarmframe.setBounds(100, 100, 220, 300);
+    JPanel mainPanel = new JPanel(new BorderLayout());
+
+    Integer[] zeroThroughTwelve = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+    Integer[] zeroThroughFiftyNine =
+        {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24,
+            25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46,
+            47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59};
+    String[] amOrPm = {"AM", "PM"};
+
+    JPanel alarmCreation = new JPanel(new BorderLayout());
+
+    JPanel comboboxPanel = new JPanel(new BorderLayout());
+
+    // HOUR
+    JPanel hourPanel = new JPanel(new BorderLayout());
+    JComboBox<Integer> comboBox = new JComboBox<Integer>(zeroThroughTwelve);
+
+    JLabel lblHour = new JLabel("Hr");
+    lblHour.setBorder(new EmptyBorder(4, 20, 0, 4));
+
+    hourPanel.add(comboBox, BorderLayout.CENTER);
+    hourPanel.add(lblHour, BorderLayout.NORTH);
+
+    comboboxPanel.add(hourPanel, BorderLayout.WEST);
+
+    // MINUTE
+    JPanel minutePanel = new JPanel(new BorderLayout());
+    JComboBox<Integer> comboBox_1 = new JComboBox<Integer>(zeroThroughFiftyNine);
+
+    JLabel lblMin = new JLabel("Min");
+    lblMin.setBorder(new EmptyBorder(4, 20, 0, 4));
+
+    minutePanel.add(comboBox_1, BorderLayout.CENTER);
+    minutePanel.add(lblMin, BorderLayout.NORTH);
+
+    comboboxPanel.add(minutePanel, BorderLayout.CENTER);
+
+    // AM
+    JPanel amPanel = new JPanel(new BorderLayout());
+    JComboBox<String> comboBox_2 = new JComboBox<String>(amOrPm);
+    JLabel lblAmpm = new JLabel("Am/Pm");
+    lblAmpm.setBorder(new EmptyBorder(4, 15, 0, 4));
+
+    amPanel.add(comboBox_2, BorderLayout.CENTER);
+    amPanel.add(lblAmpm, BorderLayout.NORTH);
+
+
+    comboboxPanel.add(amPanel, BorderLayout.EAST);
+
+    alarmCreation.add(comboboxPanel, BorderLayout.CENTER);
+
+    listAlarms = new JList(alarmsInList.toArray()); // data has type Object[]
+    listAlarms.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+    listAlarms.setLayoutOrientation(JList.HORIZONTAL_WRAP);
+    listAlarms.setVisibleRowCount(-1);
+    JScrollPane listScroller = new JScrollPane(listAlarms);
+    listScroller.setPreferredSize(new Dimension(250, 80));
+
+    JPanel alarmListPanel = new JPanel(new BorderLayout());
+    listAlarms.setBorder(BorderFactory.createLineBorder(Color.black));
+    alarmListPanel.add(listAlarms, BorderLayout.CENTER);
+
+    btnAddAlarm = new JButton("Add Alarm");
+    btnAddAlarm.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent arg0) {
+        Alarm newAlarm = new Alarm();
+
+        int hour;
+        if (comboBox_2.getSelectedItem() == "PM")
+          hour = (int) comboBox.getSelectedItem() + 12;
+        else
+          hour = (int) comboBox.getSelectedItem();
+
+        Calendar currentTime = Calendar.getInstance();
+        newAlarm.setAlarmTimeWithInts(hour, comboBox_1.getSelectedIndex());
+        // If User tries to do for a time that has already passed make it for the next day
+        if (newAlarm.getAlarmTimeCalendarObject().before(currentTime))
+          newAlarm.addDay(1);
+
+        File alarmSound = selectAlam();
+
+        if (alarmSound == null)
+          return;
+
+        newAlarm.setAlarmSound(alarmSound);
+        newAlarm.setSnoozeLengthInMinutes(PromptBox.snoozeLengthPicker());
+        alarmList.add(newAlarm);
+        ScheduledAlarms schedAlarm = new ScheduledAlarms(newAlarm, player);
+        scheduledAlarmsList.add(schedAlarm);
+        alarmframe.dispatchEvent(new WindowEvent(alarmframe, WindowEvent.WINDOW_CLOSING));
+        alarmSetGui();
+      }
+    });
+    alarmCreation.add(btnAddAlarm, BorderLayout.SOUTH);
+
+    btnRemoveAlarm = new JButton("Remove Alarm");
+    btnRemoveAlarm.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent arg0) {
+        if (!listAlarms.isSelectionEmpty()) {
+
+          // cancels timer
+          for (int i = 0; i < scheduledAlarmsList.size(); i++) {
+            if (alarmList.get(listAlarms.getSelectedIndex()).getAlarmTimeCalendarObjectClean() == scheduledAlarmsList
+                .get(i).alarmScheduled.getAlarmTimeCalendarObjectClean()) {
+              scheduledAlarmsList.get(i).t.cancel();
+              scheduledAlarmsList.remove(i);
+            }
+          }
+
+          alarmList.remove(listAlarms.getSelectedIndex());
+
+          alarmframe.dispatchEvent(new WindowEvent(alarmframe, WindowEvent.WINDOW_CLOSING));
+          alarmSetGui();
+        }
+      }
+    });
+
+    alarmListPanel.add(btnRemoveAlarm, BorderLayout.SOUTH);
+    JLabel setAlarms = new JLabel("Set Alarms");
+    setAlarms.setBorder(new EmptyBorder(4, 80, 0, 4));
+    alarmListPanel.add(setAlarms, BorderLayout.NORTH);
+
+    mainPanel.add(alarmListPanel, BorderLayout.CENTER);
+    mainPanel.add(alarmCreation, BorderLayout.NORTH);
+
+    alarmframe.add(mainPanel);
+    alarmframe.setResizable(false);
+    alarmframe.setVisible(true);
   }
 
 };
