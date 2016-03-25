@@ -1,6 +1,6 @@
 import java.util.*;
-
-
+import java.io.*;
+import java.nio.file.*;
 
 
 public class Playlist {
@@ -9,12 +9,15 @@ public class Playlist {
 	private ArrayList<String> playlist;
 	// Current postion in the playlist
 	private int position;
+	// Current postion in the playlist
+	private String name;
 	
 	
 	// Default contructor
-	public Playlist ( ) {
+	public Playlist ( String name ) {
 		this.playlist = new ArrayList<String>();
 		this.position = 0;
+		this.name = name;
 	}
 	
 	// Helper method to make sure playlist is intialized
@@ -50,6 +53,14 @@ public class Playlist {
 	public void setPosition ( int p ) {
 		this.position = p;
 	}
+	
+	public String getName ( ) {
+		return this.name;
+	}
+	
+	public void setName ( String n ) {
+		this.name = n;
+	}	
 	
 	// add a String song to the end of the playlist
 	public void addSong ( String song ) {
@@ -110,9 +121,55 @@ public class Playlist {
 		return true;
 	}
 	
+	// Save playlist to a folder based on object
+	public void save () {
+		// directorty style may change for other OS
+		File path = new File(System.getProperty("user.dir") + "/" + this.name);
+
+		// if folder doesnt exists, then create it
+		try {
+			if (!path.exists()) {
+				path.createNewFile();
+			}
+
+			for ( int i = 0; i < playlist.size(); i++ ) {
+				Files.copy( Paths.get(playlist.get( i )), Paths.get(path.getAbsolutePath() + "/" + playlist.get( i ).split("/|\\")[ playlist.get( i ).split("/|\\").length -1 ]) );
+			}
+
+		} catch ( Exception e ) {
+			System.out.println( "IO error " + e.getMessage() );
+		} 
+	}
+	
+	// load playlist from a folder and set up object
+	public void load ( String foldername ) {
+		File path = new File( foldername );
+
+		if (!path.exists()) {
+			System.out.println( "Error, file does not exist: " + foldername );
+			return;
+		}
+		
+		name = foldername.split("/|\\")[ foldername.split("/|\\").length -1 ];
+		clear();
+		
+		File[] listOfFiles = path.listFiles();
+
+		for (int i = 0; i < listOfFiles.length; i++) {
+		  if (listOfFiles[i].isFile()) {
+			System.out.println("File " + listOfFiles[i].getName());
+			if ( listOfFiles[i].getName().endsWith(".mp3") ) {
+				addSong( listOfFiles[i].getName() );
+			}
+		  }
+		}
+    
+	}
+	
+	
 	// main method for testing
 	public static void main(String [] args)	{
-		Playlist p1 = new Playlist ();
+		Playlist p1 = new Playlist ( "test" );
 		p1.addSong( "1" );
 		p1.addSong( "2" );
 		p1.addSong( "3" );
@@ -129,6 +186,8 @@ public class Playlist {
 		while ( p1.play() ) {
 			System.out.println();
 		}
+		
+		p1.save();
 		
 		p1.clear();
 		System.out.println( "Songs: " + p1.size() );
