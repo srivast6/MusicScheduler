@@ -170,8 +170,8 @@ public class MusicHome {
           heading.setVisible(false);
           nowPlaying.setText("");
           pause.setVisible(false);
-          pause.setIcon(pauseIcon);
-          play.setIcon(playIcon);
+          pause.setIcon(playIcon);
+          play.setIcon(pauseIcon);
           next.setVisible(false);
         }
       }
@@ -500,21 +500,25 @@ public class MusicHome {
 
     queuePanel.add(queueControls, BorderLayout.SOUTH);
 
+
     showQueue.addActionListener(new ActionListener() {
+      int annoyance = 0;
+
       @Override
       public void actionPerformed(ActionEvent e) {
 
         if (!viewQueue) {
           showQueue.setIcon(leftIcon);
-          mainframe.setSize((mainframe.getWidth() + 220), mainframe.getHeight());
+          mainframe.setSize((mainframe.getWidth() + 220 + (annoyance)), mainframe.getHeight());
           queuePanel.setVisible(true);
           mainframe.repaint();
           mainframe.validate();
           viewQueue = true;
+          annoyance += 15;
         } else {
 
           showQueue.setIcon(rightIcon);
-          mainframe.setSize((mainframe.getWidth() - 220), mainframe.getHeight());
+          mainframe.setSize((mainframe.getWidth() - 220 + (annoyance)), mainframe.getHeight());
           queuePanel.setVisible(false);
           mainframe.repaint();
           mainframe.validate();
@@ -566,7 +570,7 @@ public class MusicHome {
     playlist.addMouseListener(new MouseListener() {
       @Override
       public void mouseClicked(MouseEvent e) {
-        if (e.getClickCount() == 2) {
+        if (e.getClickCount() == 3) {
           for (int i = 0; i < songNames.size(); i++) {
             File selectedSong =
                 new File(musicDirectory.getAbsolutePath() + "/"
