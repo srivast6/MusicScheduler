@@ -915,6 +915,7 @@ public class MusicHome {
   public File selectMusicDirectoryFile() {
 	   
 	    JFileChooser fileChooser = new JFileChooser();
+	    fileChooser.setDialogTitle("Select your alarm sound!");
 	    FileNameExtensionFilter filter = new FileNameExtensionFilter("MP3 File","mp3");
 	    fileChooser.setFileFilter(filter);
 	    fileChooser.showOpenDialog(fileChooser);
