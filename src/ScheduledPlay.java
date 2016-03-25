@@ -97,39 +97,6 @@ public class ScheduledPlay {
 		t.cancel();
 	}
 	
-	// old save format
-	/* FORMAT
-	 * Song or Playlist
-	 * filename of song or playlist
-	 * date
-	 
-	public void save ( String filename ) {
-		DateFormat df = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
-		File file = new File( filename );
-		// if file doesnt exists, then create it
-		try {
-			if (!file.exists()) {
-				file.createNewFile();
-			}
-
-			FileWriter fw = new FileWriter(file.getAbsoluteFile());
-			BufferedWriter bw = new BufferedWriter(fw);
-			
-			if ( isPlaylist ) {
-				bw.write( "Playlist\n" );
-			} else {
-				bw.write( "Song\n" );
-			}
-			
-			bw.write( this.file + "\n" );
-			bw.write( df.format(scheduledTime) );
-			bw.close();
-		} catch ( Exception e ) {
-			System.out.println( "IO error " + e.getMessage() );
-		} 
-	}
-	* */
-	
 	
 	// main method for testing
 	// used before integrating with gui

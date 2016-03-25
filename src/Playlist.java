@@ -108,30 +108,6 @@ public class Playlist {
 		} 
 	}
 	
-	// Play implemented in other files
-	/*
-	public boolean play ( ) {
-		if ( !checkPlaylist( playlist ) ) {
-			System.out.println( "Error: Playlist not initialized" );
-			return false;
-		} 
-		if ( position >= playlist.size() ) {
-			System.out.println( "Error: End of playlist. can not play" );
-			return false;
-		}
-		String song = playlist.get( position );
-		
-		//System.out.println( "Now Playing: " + song );
-		//play( song );
-		
-		position++;
-		if ( position >= playlist.size() ) {
-			return false;
-		}
-		
-		return true;
-	}
-	* */
 	
 	// Save playlist to a folder based on object
 	public void save (MusicHome mh) {
@@ -152,37 +128,6 @@ public class Playlist {
 			System.out.println( "IO error " + e.getMessage() );
 		} 
 	}
-	
-	// No longer needed with folder system
-	/*
-	public void load ( String foldername ) {
-		File path = new File( foldername );
-
-		if (!path.exists()) {
-			System.out.println( "Error, file does not exist: " + foldername );
-			return;
-		}
-		System.out.println( "Loading playlist from: " + foldername );
-		
-		name = foldername.split("/")[ foldername.split("/").length -1 ];
-		clear();
-		
-		File[] listOfFiles = path.listFiles();
-
-		for (int i = 0; i < listOfFiles.length; i++) {
-		  if (listOfFiles[i].isFile()) {
-			System.out.println("File " + listOfFiles[i].getAbsolutePath());
-			if ( listOfFiles[i].getName().endsWith(".mp3") ) {
-				addSong( listOfFiles[i].getAbsolutePath() );
-			}
-		  }
-		}
-		
-		setPosition( 0 );
-    
-	}
-	* */
-	
 	
 	// main method for testing
 	public static void main(String [] args)	{

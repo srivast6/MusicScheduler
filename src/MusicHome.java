@@ -914,6 +914,7 @@ public class MusicHome {
 
   }
   
+  // Method to load scheduled playlists from the text file on startup
   public void readSchdule() {
 	    MusicHome passingView = this;
 		File file = new File("playlistTimings.txt");
@@ -927,6 +928,8 @@ public class MusicHome {
 			while ((l = br.readLine()) != null) {
 				name = l;
 				date = (Date)formatter.parse(br.readLine());
+				
+				// only load future dates
 				if ( date.after(now) ) {
 					System.out.println(name + " " + formatter.format(date));
 					ScheduledPlay scheduler = new ScheduledPlay ( date, new Playlist ( l ), passingView );
