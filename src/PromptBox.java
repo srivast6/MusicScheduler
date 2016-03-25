@@ -1,6 +1,6 @@
 import javax.swing.JOptionPane;
 
-public class PromptBox {
+public class PromptBox extends MusicHome{
 
     public static int snoozeBox(String alarmTime)
     {

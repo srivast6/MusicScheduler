@@ -67,6 +67,7 @@ public class ScheduledAlarms{
     	System.out.println("Date getting passed: "+alarmScheduled.getAlarmTimeCalendarObjectClean().getTime());
     	t.schedule(new AlarmSet(alarmScheduled, player),(Date) scheduleForCal2.getTime());
         System.out.println("Set Alarm for: "+alarmScheduled.getAlarmTime());
+        
     }
     
     public void cancelTimer(){

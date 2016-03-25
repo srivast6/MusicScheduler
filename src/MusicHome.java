@@ -976,16 +976,35 @@ public class MusicHome {
     musicDirectory = e.musicPath;
 
   }
+  
+  
 
   public void alarmSetGui() {
+	  if(alarmframe != null){
+		  if(alarmframe.isVisible()){
+				alarmframe.dispatchEvent(new WindowEvent(alarmframe, WindowEvent.WINDOW_CLOSING));
+			}
+	  }
+	
     ArrayList<String> alarmsInList = new ArrayList<String>();
     for (int i = 0; i < alarmList.size(); i++) {
       alarmsInList.add(alarmList.get(i).getAlarmTime());
     }
     Calendar nowDate = Calendar.getInstance();
     for (int i = 0; i < alarmList.size(); i++) {
-      if (alarmList.get(i).getAlarmTimeCalendarObjectClean().before(nowDate))
-        alarmList.remove(i);
+      if (alarmList.get(i).getAlarmTimeCalendarObjectClean().before(nowDate)){
+    	  
+    	  for (int b= 0; b < scheduledAlarmsList.size(); b++) {
+              if (alarmList.get(i).getAlarmTimeCalendarObjectClean() == scheduledAlarmsList
+                  .get(b).alarmScheduled.getAlarmTimeCalendarObjectClean()) {
+                scheduledAlarmsList.get(b).t.cancel();
+                scheduledAlarmsList.remove(b);
+              }
+            }
+    	  
+    	  alarmList.remove(i);
+      }
+       
     }
 
     alarmframe = new JFrame("Alarms");
@@ -1121,3 +1140,5 @@ public class MusicHome {
   }
 
 };
+
+
