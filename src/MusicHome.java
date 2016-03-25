@@ -234,7 +234,7 @@ public class MusicHome {
         public void stateChanged(ChangeEvent e) {
           Audio.setMasterOutputMute(false);
           float normalizedVolume = (float) (((JSlider)e.getSource()).getValue() / (float) 100.00);
-          Audio.setMasterOutputVolume(normalizedVolume);
+          Audio.setMasterOutputVolume(normalizedVolume); 
         }
       });
 
