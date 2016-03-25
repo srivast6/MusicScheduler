@@ -976,7 +976,24 @@ public class MusicHome {
     musicDirectory = e.musicPath;
 
   }
-  
+  public void deleteAlarmsPassed(){
+	  Calendar nowDate = Calendar.getInstance();
+	    for (int i = 0; i < alarmList.size(); i++) {
+	      if (alarmList.get(i).getAlarmTimeCalendarObjectClean().before(nowDate)){
+	    	  
+	    	  for (int b= 0; b < scheduledAlarmsList.size(); b++) {
+	              if (alarmList.get(i).getAlarmTimeCalendarObjectClean() == scheduledAlarmsList
+	                  .get(b).alarmScheduled.getAlarmTimeCalendarObjectClean()) {
+	                scheduledAlarmsList.get(b).t.cancel();
+	                scheduledAlarmsList.remove(b);
+	              }
+	            }
+	    	  
+	    	  alarmList.remove(i);
+	      }
+	       
+	    }
+  }
   
 
   public void alarmSetGui() {
@@ -985,7 +1002,7 @@ public class MusicHome {
 				alarmframe.dispatchEvent(new WindowEvent(alarmframe, WindowEvent.WINDOW_CLOSING));
 			}
 	  }
-	
+	MusicHome passingView = this;
     ArrayList<String> alarmsInList = new ArrayList<String>();
     for (int i = 0; i < alarmList.size(); i++) {
       alarmsInList.add(alarmList.get(i).getAlarmTime());
@@ -1077,11 +1094,21 @@ public class MusicHome {
         Alarm newAlarm = new Alarm();
 
         int hour;
-        if (comboBox_2.getSelectedItem() == "PM")
-          hour = (int) comboBox.getSelectedItem() + 12;
-        else
-          hour = (int) comboBox.getSelectedItem();
+        if (comboBox_2.getSelectedItem() == "PM"){
+          if((int) comboBox.getSelectedItem() != 12)
+        	  hour = (int) comboBox.getSelectedItem() + 12;
+          else
+        	  hour = 12;
+          
+        }
+        else{
+        	if((int) comboBox.getSelectedItem() != 12)
+      		  hour = (int) comboBox.getSelectedItem();
+      	  	else 
+      		  hour = 0;
+        }
 
+        
         Calendar currentTime = Calendar.getInstance();
         newAlarm.setAlarmTimeWithInts(hour, comboBox_1.getSelectedIndex());
         // If User tries to do for a time that has already passed make it for the next day
@@ -1096,7 +1123,7 @@ public class MusicHome {
         newAlarm.setAlarmSound(alarmSound);
         newAlarm.setSnoozeLengthInMinutes(PromptBox.snoozeLengthPicker());
         alarmList.add(newAlarm);
-        ScheduledAlarms schedAlarm = new ScheduledAlarms(newAlarm, player);
+        ScheduledAlarms schedAlarm = new ScheduledAlarms(newAlarm, player, passingView);
         scheduledAlarmsList.add(schedAlarm);
         alarmframe.dispatchEvent(new WindowEvent(alarmframe, WindowEvent.WINDOW_CLOSING));
         alarmSetGui();

@@ -9,13 +9,15 @@ public class ScheduledAlarms{
   Timer t;
   MusicPlayer player;
   Alarm alarmScheduled;
+  MusicHome currentView;
 
   //constructor
-  public ScheduledAlarms(Alarm x, MusicPlayer player){
+  public ScheduledAlarms(Alarm x, MusicPlayer player, MusicHome view){
   
       this.t = new Timer();
       this.player = player;
       this.alarmScheduled = x;
+      this.currentView = view;
       Calendar scheduleForCal = new GregorianCalendar();
       scheduleForCal = x.getAlarmTimeCalendarObjectClean();
       System.out.println("Date getting passed: "+scheduleForCal.getTime());
@@ -67,11 +69,15 @@ public class ScheduledAlarms{
     	System.out.println("Date getting passed: "+alarmScheduled.getAlarmTimeCalendarObjectClean().getTime());
     	t.schedule(new AlarmSet(alarmScheduled, player),(Date) scheduleForCal2.getTime());
         System.out.println("Set Alarm for: "+alarmScheduled.getAlarmTime());
+        currentView.alarmSetGui();
         
     }
     
     public void cancelTimer(){
     	t.cancel();
+    	alarmScheduled.addDay(-1);
+    	currentView.deleteAlarmsPassed();
+    	currentView.alarmSetGui();
     }
   }
 
@@ -108,7 +114,7 @@ public class ScheduledAlarms{
    // ScheduledAlarms test3 = new ScheduledAlarms(alarm3);
     MusicPlayer playing = new MusicPlayer(isPlaying);
     playing.selectDirectory();
-    ScheduledAlarms test4 = new ScheduledAlarms(alarm4, playing);
+   // ScheduledAlarms test4 = new ScheduledAlarms(alarm4, playing);
     System.out.println("Testing - ");
   
   }
