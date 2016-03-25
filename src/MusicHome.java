@@ -230,7 +230,7 @@ public class MusicHome {
 
   }
 
-  private void refreshQueue() {
+  public void refreshQueue() {
     mainframe.remove(queuePanel);
     controlPanel.remove(showQueue);
     queueControl();
@@ -390,6 +390,7 @@ public class MusicHome {
     queuemodel = new DefaultListModel<String>();
     for (int i = 0; i < songQueue.size(); i++) {
       queuemodel.add(i, (i + 1) + ".  " + songQueue.get(i).getName());
+      System.out.println(i + " - " + songQueue.get(i).getName());
     }
 
     queuelist = new JList<String>(queuemodel);
@@ -704,6 +705,7 @@ public class MusicHome {
 
     JMenuBar menubar = new JMenuBar();
     ImageIcon icon = new ImageIcon("exit.png");
+    MusicHome passingView = this;
 
     // FILE MENUBAR ITEM
     JMenu file = new JMenu("File");
@@ -742,7 +744,8 @@ public class MusicHome {
     newSchedule.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent event) {
-    	  PlaylistScheduleGUI p = new PlaylistScheduleGUI();
+		  
+    	  PlaylistScheduleGUI p = new PlaylistScheduleGUI( passingView );
     	  p.prepareGUI();
       }
     });
@@ -846,6 +849,20 @@ public class MusicHome {
     }
     return selectedFile;
   }
+  
+  public File getMusicDirectory() {
+	  return this.musicDirectory;
+  }
+  
+  public ArrayList<File> getSongQueue() {
+	  return this.songQueue;
+  }
+  
+  public MusicPlayer getMusicPlayer() {
+	  return this.player;
+  }
+  
+  
 
   public saveData e;
 

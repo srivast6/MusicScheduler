@@ -43,15 +43,18 @@ public class PlaylistScheduleGUI {
 	private JList playlistView;
 	private JSpinner timeSpinner;
 	private ArrayList<String> playlistEntries;
+	
+	ScheduledPlay scheduler; 
+	private MusicHome musicHome;
+	
 	int selectedIndex;
 	String playlistToSchedule; //stores name of playlist to be played
 	Date d;						//stores date at which the playlist should be played
 	
 	DateFormat formatter = new SimpleDateFormat("yyyy-MMM-dd HH:mm:ss");
 
-	public PlaylistScheduleGUI() {
-		// TODO Auto-generated constructor stub
-		
+	public PlaylistScheduleGUI( MusicHome mh ) {
+		this.musicHome = mh;
 	}
 	
 	public void prepareGUI() {
@@ -102,6 +105,9 @@ public class PlaylistScheduleGUI {
 				playlistToSchedule = playlistEntries.get(selectedIndex);
 				System.out.println("schedule " + playlistToSchedule + " at " + formatter.format(d));
 				writeSchduleToFile(playlistToSchedule, d);
+				
+				scheduler = new ScheduledPlay ( d, new Playlist ( playlistToSchedule ), musicHome );
+				
 				readSchdule();
 			}
 		});
