@@ -763,14 +763,8 @@ public class MusicHome {
     newSchedule.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent event) {
-<<<<<<< HEAD
-		  
 	PlaylistScheduleGUI p = new PlaylistScheduleGUI( passingView );
 	p.prepareGUI();
-=======
-	PlaylistScheduleGUI p = new PlaylistScheduleGUI( passingView );
-	p.prepareGUI();
->>>>>>> master
       }
     });
     schedule.add(newSchedule);
@@ -1014,7 +1008,6 @@ public class MusicHome {
     musicDirectory = e.musicPath;
 
   }
-<<<<<<< HEAD
   
   // Method to load scheduled playlists from the text file on startup
   public void readSchdule() {
@@ -1045,7 +1038,6 @@ public class MusicHome {
 			System.out.println(e);
 		}
 	}
-=======
   public void deleteAlarmsPassed(){
 	  Calendar nowDate = Calendar.getInstance();
 	    for (int i = 0; i < alarmList.size(); i++) {
@@ -1235,7 +1227,6 @@ public class MusicHome {
     alarmframe.setResizable(false);
     alarmframe.setVisible(true);
   }
->>>>>>> master
 
 };
 
