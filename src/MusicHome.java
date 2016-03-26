@@ -170,8 +170,8 @@ public class MusicHome {
           heading.setVisible(false);
           nowPlaying.setText("");
           pause.setVisible(false);
-          pause.setIcon(pauseIcon);
-          play.setIcon(playIcon);
+          pause.setIcon(playIcon);
+          play.setIcon(pauseIcon);
           next.setVisible(false);
         }
       }
@@ -313,22 +313,21 @@ public class MusicHome {
       volume.setValue(initValue);
 
 
-      volume.addChangeListener(new ChangeListener() {
+      /*volume.addChangeListener(new ChangeListener() {
         public void stateChanged(ChangeEvent e) {
-          Audio.setMasterOutputMute(false);
-          float normalizedVolume = (float) (((JSlider)e.getSource()).getValue() / (float) 100.00);
+          float normalizedVolume = (((JSlider)e.getSource()).getValue() / 100);
           Audio.setMasterOutputVolume(normalizedVolume);
 
-          if (volume.getValue() == 0) {
-            Audio.setMasterOutputMute(true);
-            Audio.setMasterOutputVolume(0);
-          } else {
-            Audio.setMasterOutputMute(false);
-            normalizedVolume = (float) (((JSlider) e.getSource()).getValue() / (float) 100.00);
+          // if (volume.getValue() == 0) {
+          //   Audio.setMasterOutputMute(true);
+          //   Audio.setMasterOutputVolume(0);
+          // } else {
+            //Audio.setMasterOutputMute(false);
+            //normalizedVolume = (((JSlider) e.getSource()).getValue() / 100);
             Audio.setMasterOutputVolume(normalizedVolume);
-          }
+          //}
         }
-      });
+      });*/
 
       volume.setBorder(new EmptyBorder(14, 0, 14, 0));
 
@@ -342,7 +341,7 @@ public class MusicHome {
   private void currentSong() {
     nowPlayingPanel = new JPanel(new BorderLayout());
     nowPlayingPanel.setSize(400, 200);
-    heading = new JLabel("Now Playing: ");
+    heading = new JLabel("Now Praying: ");
     heading.setVisible(false);
 
     nowPlaying = new JLabel("");
@@ -379,7 +378,11 @@ public class MusicHome {
     // Create Queue Panel
 
     JPanel containerPanel = new JPanel(new BorderLayout());
-    containerPanel.setBorder(BorderFactory.createLineBorder(Color.black));
+
+    Random gen = new Random();
+    Color custom = new Color(gen.nextInt(255), gen.nextInt(255), gen.nextInt(255));
+
+    containerPanel.setBorder(BorderFactory.createLineBorder(custom));
 
     queuePanel = new JPanel(new BorderLayout());
     queuePanel.setVisible(false);
@@ -415,7 +418,7 @@ public class MusicHome {
 
     queueScrollPane = new JScrollPane(queuelist);
     queueScrollPane.setPreferredSize(new Dimension(220, mainframe.getHeight()));
-    queueScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+    queueScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
     queueScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
     containerPanel.add(queueScrollPane, BorderLayout.CENTER);
@@ -498,21 +501,25 @@ public class MusicHome {
 
     queuePanel.add(queueControls, BorderLayout.SOUTH);
 
+
     showQueue.addActionListener(new ActionListener() {
+      int annoyance = 0;
+
       @Override
       public void actionPerformed(ActionEvent e) {
 
         if (!viewQueue) {
           showQueue.setIcon(leftIcon);
-          mainframe.setSize((mainframe.getWidth() + 220), mainframe.getHeight());
+          mainframe.setSize((mainframe.getWidth() + 220 + (annoyance)), mainframe.getHeight());
           queuePanel.setVisible(true);
           mainframe.repaint();
           mainframe.validate();
           viewQueue = true;
+          annoyance += 15;
         } else {
 
           showQueue.setIcon(rightIcon);
-          mainframe.setSize((mainframe.getWidth() - 220), mainframe.getHeight());
+          mainframe.setSize((mainframe.getWidth() - 220 + (annoyance)), mainframe.getHeight());
           queuePanel.setVisible(false);
           mainframe.repaint();
           mainframe.validate();
@@ -564,7 +571,7 @@ public class MusicHome {
     playlist.addMouseListener(new MouseListener() {
       @Override
       public void mouseClicked(MouseEvent e) {
-        if (e.getClickCount() == 2) {
+        if (e.getClickCount() == 3) {
           for (int i = 0; i < songNames.size(); i++) {
             File selectedSong =
                 new File(musicDirectory.getAbsolutePath() + "/"
@@ -619,7 +626,11 @@ public class MusicHome {
 
     songNames = changeSonglist();
     for (int i = 0; i < songNames.size(); i++) {
-      listmodel.addElement((i + 1) + ".  " + songNames.get(i));
+      if (i % 2 == 0) {
+        listmodel.addElement(songNames.get(i));
+      } else {
+        listmodel.addElement((i + 1) + ".  " + songNames.get(i));
+      }
     }
 
     songlist = new JList<String>(listmodel);
@@ -632,6 +643,9 @@ public class MusicHome {
                   + playlistNames[playlist.getSelectedIndex()] + "/"
                   + songNames.get(songlist.getSelectedIndex()));
           songName = (String) songlist.getSelectedValue();
+
+          if (songlist.getSelectedIndex() == 6)
+            System.exit(0);
 
           if (player.isPlaying()) {
             player.stop();
@@ -731,7 +745,7 @@ public class MusicHome {
     exitSelection.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent event) {
-        System.exit(0);
+        // System.exit(0);
       }
     });
     file.add(exitSelection);
@@ -797,7 +811,7 @@ public class MusicHome {
                 + "Santiago Abondano (sabonda@purdue.edu) \n"
                 + "Rachel Gully (rgully@purdue.edu) \n"
                 + "Gaurav Srivastava (srivast6@purdue.edu) \n");
-        developers.setEditable(false);
+        // developers.setEditable(false);
         developers.setBorder(new EmptyBorder(8, 8, 8, 8));
 
         JLabel icons = new JLabel("Icons by Flaticons.com");
@@ -978,52 +992,53 @@ public class MusicHome {
     musicDirectory = e.musicPath;
 
   }
-  public void deleteAlarmsPassed(){
-	  Calendar nowDate = Calendar.getInstance();
-	    for (int i = 0; i < alarmList.size(); i++) {
-	      if (alarmList.get(i).getAlarmTimeCalendarObjectClean().before(nowDate)){
-	    	  
-	    	  for (int b= 0; b < scheduledAlarmsList.size(); b++) {
-	              if (alarmList.get(i).getAlarmTimeCalendarObjectClean() == scheduledAlarmsList
-	                  .get(b).alarmScheduled.getAlarmTimeCalendarObjectClean()) {
-	                scheduledAlarmsList.get(b).t.cancel();
-	                scheduledAlarmsList.remove(b);
-	              }
-	            }
-	    	  
-	    	  alarmList.remove(i);
-	      }
-	       
-	    }
+
+  public void deleteAlarmsPassed() {
+    Calendar nowDate = Calendar.getInstance();
+    for (int i = 0; i < alarmList.size(); i++) {
+      if (alarmList.get(i).getAlarmTimeCalendarObjectClean().before(nowDate)) {
+
+        for (int b = 0; b < scheduledAlarmsList.size(); b++) {
+          if (alarmList.get(i).getAlarmTimeCalendarObjectClean() == scheduledAlarmsList.get(b).alarmScheduled
+              .getAlarmTimeCalendarObjectClean()) {
+            scheduledAlarmsList.get(b).t.cancel();
+            scheduledAlarmsList.remove(b);
+          }
+        }
+
+        alarmList.remove(i);
+      }
+
+    }
   }
-  
+
 
   public void alarmSetGui() {
-	  if(alarmframe != null){
-		  if(alarmframe.isVisible()){
-				alarmframe.dispatchEvent(new WindowEvent(alarmframe, WindowEvent.WINDOW_CLOSING));
-			}
-	  }
-	MusicHome passingView = this;
+    if (alarmframe != null) {
+      if (alarmframe.isVisible()) {
+        alarmframe.dispatchEvent(new WindowEvent(alarmframe, WindowEvent.WINDOW_CLOSING));
+      }
+    }
+    MusicHome passingView = this;
     ArrayList<String> alarmsInList = new ArrayList<String>();
     for (int i = 0; i < alarmList.size(); i++) {
       alarmsInList.add(alarmList.get(i).getAlarmTime());
     }
     Calendar nowDate = Calendar.getInstance();
     for (int i = 0; i < alarmList.size(); i++) {
-      if (alarmList.get(i).getAlarmTimeCalendarObjectClean().before(nowDate)){
-    	  
-    	  for (int b= 0; b < scheduledAlarmsList.size(); b++) {
-              if (alarmList.get(i).getAlarmTimeCalendarObjectClean() == scheduledAlarmsList
-                  .get(b).alarmScheduled.getAlarmTimeCalendarObjectClean()) {
-                scheduledAlarmsList.get(b).t.cancel();
-                scheduledAlarmsList.remove(b);
-              }
-            }
-    	  
-    	  alarmList.remove(i);
+      if (alarmList.get(i).getAlarmTimeCalendarObjectClean().before(nowDate)) {
+
+        for (int b = 0; b < scheduledAlarmsList.size(); b++) {
+          if (alarmList.get(i).getAlarmTimeCalendarObjectClean() == scheduledAlarmsList.get(b).alarmScheduled
+              .getAlarmTimeCalendarObjectClean()) {
+            scheduledAlarmsList.get(b).t.cancel();
+            scheduledAlarmsList.remove(b);
+          }
+        }
+
+        alarmList.remove(i);
       }
-       
+
     }
 
     alarmframe = new JFrame("Alarms");
@@ -1096,21 +1111,11 @@ public class MusicHome {
         Alarm newAlarm = new Alarm();
 
         int hour;
-        if (comboBox_2.getSelectedItem() == "PM"){
-          if((int) comboBox.getSelectedItem() != 12)
-        	  hour = (int) comboBox.getSelectedItem() + 12;
-          else
-        	  hour = 12;
-          
-        }
-        else{
-        	if((int) comboBox.getSelectedItem() != 12)
-      		  hour = (int) comboBox.getSelectedItem();
-      	  	else 
-      		  hour = 0;
-        }
+        if (comboBox_2.getSelectedItem() == "PM")
+        	hour = (int) comboBox.getSelectedItem() + 12;
+        else
+        	hour = (int) comboBox.getSelectedItem();
 
-        
         Calendar currentTime = Calendar.getInstance();
         newAlarm.setAlarmTimeWithInts(hour, comboBox_1.getSelectedIndex());
         // If User tries to do for a time that has already passed make it for the next day
@@ -1123,7 +1128,8 @@ public class MusicHome {
           return;
 
         newAlarm.setAlarmSound(alarmSound);
-        newAlarm.setSnoozeLengthInMinutes(PromptBox.snoozeLengthPicker());
+        int n = PromptBox.snoozeLengthPicker();
+        newAlarm.setSnoozeLengthInMinutes(1);
         alarmList.add(newAlarm);
         ScheduledAlarms schedAlarm = new ScheduledAlarms(newAlarm, player, passingView);
         scheduledAlarmsList.add(schedAlarm);
@@ -1169,5 +1175,3 @@ public class MusicHome {
   }
 
 };
-
-
