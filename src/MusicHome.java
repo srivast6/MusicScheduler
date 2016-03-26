@@ -747,8 +747,7 @@ public class MusicHome {
     newSchedule.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent event) {
-        PlaylistScheduleGUI p = new PlaylistScheduleGUI(playlistEntries);
-        p.prepareScheduleGUI();
+
       }
     });
     schedule.add(newSchedule);
