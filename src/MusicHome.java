@@ -315,22 +315,18 @@ public class MusicHome {
 
       volume.addChangeListener(new ChangeListener() {
         public void stateChanged(ChangeEvent e) {
-<<<<<<< HEAD
           Audio.setMasterOutputMute(false);
           float normalizedVolume = (float) (((JSlider)e.getSource()).getValue() / (float) 100.00);
-          Audio.setMasterOutputVolume(normalizedVolume); 
-=======
+          Audio.setMasterOutputVolume(normalizedVolume);
 
           if (volume.getValue() == 0) {
             Audio.setMasterOutputMute(true);
             Audio.setMasterOutputVolume(0);
           } else {
             Audio.setMasterOutputMute(false);
-            float normalizedVolume =
-                (float) (((JSlider) e.getSource()).getValue() / (float) 100.00);
+            normalizedVolume = (float) (((JSlider) e.getSource()).getValue() / (float) 100.00);
             Audio.setMasterOutputVolume(normalizedVolume);
           }
->>>>>>> 7f6acf86d7db625b184d3534ff71d372cf94b645
         }
       });
 
