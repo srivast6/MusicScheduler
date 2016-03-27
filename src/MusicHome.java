@@ -15,9 +15,18 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
+
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Random;
+import java.util.Date;
 
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
@@ -119,6 +128,10 @@ public class MusicHome {
   // Required for event and change listeners
   private BooleanChangeListener listener;
   private BooleanEventListener isPlaying;
+  
+  // formatter for reading schedules
+  DateFormat formatter = new SimpleDateFormat("yyyy-MMM-dd HH:mm:ss");
+
 
 
   // Indexes
@@ -139,6 +152,7 @@ public class MusicHome {
     prepareGUI();
     prepareEventListener();
     player = new MusicPlayer(isPlaying);
+    readSchdule();
   }
 
   public void prepareEventListener() {
@@ -228,7 +242,7 @@ public class MusicHome {
 
   }
 
-  private void refreshQueue() {
+  public void refreshQueue() {
     mainframe.remove(queuePanel);
     controlPanel.remove(showQueue);
     queueControl();
@@ -390,6 +404,7 @@ public class MusicHome {
     queuemodel = new DefaultListModel<String>();
     for (int i = 0; i < songQueue.size(); i++) {
       queuemodel.add(i, (i + 1) + ".  " + songQueue.get(i).getName());
+      System.out.println(i + " - " + songQueue.get(i).getName());
     }
 
     queuelist = new JList<String>(queuemodel);
@@ -709,6 +724,7 @@ public class MusicHome {
 
     JMenuBar menubar = new JMenuBar();
     ImageIcon icon = new ImageIcon("exit.png");
+    MusicHome passingView = this;
 
     // FILE MENUBAR ITEM
     JMenu file = new JMenu("File");
@@ -747,8 +763,8 @@ public class MusicHome {
     newSchedule.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent event) {
-        PlaylistScheduleGUI p = new PlaylistScheduleGUI(playlistEntries);
-        p.prepareScheduleGUI();
+	PlaylistScheduleGUI p = new PlaylistScheduleGUI( passingView );
+	p.prepareGUI();
       }
     });
     schedule.add(newSchedule);
@@ -912,6 +928,20 @@ public class MusicHome {
     }
     return selectedFile;
   }
+  
+  public File getMusicDirectory() {
+	  return this.musicDirectory;
+  }
+  
+  public ArrayList<File> getSongQueue() {
+	  return this.songQueue;
+  }
+  
+  public MusicPlayer getMusicPlayer() {
+	  return this.player;
+  }
+  
+  
 
   public File selectAlam() {
     // Set look and feel
@@ -978,6 +1008,36 @@ public class MusicHome {
     musicDirectory = e.musicPath;
 
   }
+  
+  // Method to load scheduled playlists from the text file on startup
+  public void readSchdule() {
+	    MusicHome passingView = this;
+		File file = new File("playlistTimings.txt");
+		String name;
+		Date date;
+		Date now = new Date();
+		System.out.println("Reading");
+		try {
+			BufferedReader br = new BufferedReader(new FileReader(file));
+			String l;
+			while ((l = br.readLine()) != null) {
+				name = l;
+				date = (Date)formatter.parse(br.readLine());
+				
+				// only load future dates
+				if ( date.after(now) ) {
+					System.out.println(name + " " + formatter.format(date));
+					ScheduledPlay scheduler = new ScheduledPlay ( date, new Playlist ( l ), passingView );
+				}
+			}
+			br.close();
+		}catch(IOException ioe) {
+			System.out.println(ioe);
+		} catch (ParseException e) {
+			// TODO: handle exception
+			System.out.println(e);
+		}
+	}
   public void deleteAlarmsPassed(){
 	  Calendar nowDate = Calendar.getInstance();
 	    for (int i = 0; i < alarmList.size(); i++) {
