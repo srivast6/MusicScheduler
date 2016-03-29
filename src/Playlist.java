@@ -1,3 +1,4 @@
+// Lazy includes, clean if time allows
 import java.util.*;
 import java.io.*;
 import java.nio.file.*;
@@ -13,7 +14,6 @@ public class Playlist {
 	private String name;
 	
 	
-	// Default contructor
 	public Playlist ( String name ) {
 		this.playlist = new ArrayList<String>();
 		this.position = 0;
@@ -47,7 +47,11 @@ public class Playlist {
 	}
 	
 	public int getPosition ( ) {
-		return this.position;
+		return this.position + 1;
+	}
+		
+	public int getSize ( ) {
+		return this.playlist.size();
 	}
 	
 	public void setPosition ( int p ) {
@@ -57,10 +61,16 @@ public class Playlist {
 	public String getName ( ) {
 		return this.name;
 	}
+		
+	public String getCurrentSong ( ) {
+		return this.playlist.get(position);
+	}
 	
 	public void setName ( String n ) {
 		this.name = n;
 	}	
+	
+	
 	
 	// add a String song to the end of the playlist
 	public void addSong ( String song ) {
@@ -98,33 +108,11 @@ public class Playlist {
 		} 
 	}
 	
-	// plays song from playlist at current position returns true if there is another song
-	// Use in a while loop to play an entire playlist
-	public boolean play ( ) {
-		if ( !checkPlaylist( playlist ) ) {
-			return false;
-		} 
-		if ( position >= playlist.size() ) {
-			System.out.println( "Error: End of playlist. can not play" );
-			return false;
-		}
-		String song = playlist.get( position );
-		
-		System.out.println( "Now Playing: " + song );
-		//play( song );
-		
-		position++;
-		if ( position >= playlist.size() ) {
-			return false;
-		}
-		
-		return true;
-	}
 	
 	// Save playlist to a folder based on object
-	public void save () {
+	public void save (MusicHome mh) {
 		// directorty style may change for other OS
-		File path = new File(System.getProperty("user.dir") + "/" + this.name);
+		File path = new File( mh.getMusicDirectory() + "/" + this.name);
 
 		// if folder doesnt exists, then create it
 		try {
@@ -133,7 +121,7 @@ public class Playlist {
 			}
 
 			for ( int i = 0; i < playlist.size(); i++ ) {
-				Files.copy( Paths.get(playlist.get( i )), Paths.get(path.getAbsolutePath() + "/" + playlist.get( i ).split("/|\\")[ playlist.get( i ).split("/|\\").length -1 ]) );
+				Files.copy( Paths.get(playlist.get( i )), Paths.get(path.getAbsolutePath() + "/" + this.name ) );
 			}
 
 		} catch ( Exception e ) {
@@ -141,7 +129,6 @@ public class Playlist {
 		} 
 	}
 	
-	// load playlist from a folder and set up object
 	public void load ( String foldername ) {
 		File path = new File( foldername );
 
@@ -149,23 +136,27 @@ public class Playlist {
 			System.out.println( "Error, file does not exist: " + foldername );
 			return;
 		}
+		System.out.println( "Loading playlist from: " + foldername );
 		
-		name = foldername.split("/|\\")[ foldername.split("/|\\").length -1 ];
+		name = foldername.split("/")[ foldername.split("/").length -1 ];
 		clear();
 		
 		File[] listOfFiles = path.listFiles();
 
 		for (int i = 0; i < listOfFiles.length; i++) {
 		  if (listOfFiles[i].isFile()) {
-			System.out.println("File " + listOfFiles[i].getName());
+			System.out.println("File " + listOfFiles[i].getAbsolutePath());
 			if ( listOfFiles[i].getName().endsWith(".mp3") ) {
-				addSong( listOfFiles[i].getName() );
+                            if ( i % 2 == 0 ) {
+				addSong( listOfFiles[i].getAbsolutePath() );
+                            }
 			}
 		  }
 		}
+		Collections.reverse(playlist);
+		setPosition( 0 );
     
 	}
-	
 	
 	// main method for testing
 	public static void main(String [] args)	{
@@ -173,21 +164,12 @@ public class Playlist {
 		p1.addSong( "1" );
 		p1.addSong( "2" );
 		p1.addSong( "3" );
-		p1.play();
 		p1.addSongNext("test");
 		System.out.println( "Songs: " + p1.size() );
-		while ( p1.play() ) {
-			System.out.println();
-		}
 		
 		p1.removeSong( 2 );
 		System.out.println( "Songs: " + p1.size() );
 		p1.setPosition( 0 );
-		while ( p1.play() ) {
-			System.out.println();
-		}
-		
-		p1.save();
 		
 		p1.clear();
 		System.out.println( "Songs: " + p1.size() );
