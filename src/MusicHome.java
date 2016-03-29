@@ -562,7 +562,7 @@ public class MusicHome {
       @Override
       public void valueChanged(ListSelectionEvent e) {
         int plistIndex = playlist.getSelectedIndex();
-        selectedIndex = plistIndex;
+        selectedIndex = (plistIndex + 1) % playlistNames.length;
 
         songNames.clear();
         listmodel.clear();
