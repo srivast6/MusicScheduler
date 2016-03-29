@@ -724,7 +724,7 @@ public class MusicHome {
 
     JMenuBar menubar = new JMenuBar();
     ImageIcon icon = new ImageIcon("exit.png");
-    MusicHome passingView = this;
+    final MusicHome passingView = this;
 
     // FILE MENUBAR ITEM
     JMenu file = new JMenu("File");
@@ -793,7 +793,7 @@ public class MusicHome {
 
       @Override
       public void mouseClicked(MouseEvent e) {
-        JFrame about = new JFrame("About");
+        final JFrame about = new JFrame("About");
         about.setSize(280, 170);
         about.setLayout(new BorderLayout());
         about.setResizable(false);
@@ -1064,7 +1064,7 @@ public class MusicHome {
 				alarmframe.dispatchEvent(new WindowEvent(alarmframe, WindowEvent.WINDOW_CLOSING));
 			}
 	  }
-	MusicHome passingView = this;
+	final MusicHome passingView = this;
     ArrayList<String> alarmsInList = new ArrayList<String>();
     for (int i = 0; i < alarmList.size(); i++) {
       alarmsInList.add(alarmList.get(i).getAlarmTime());
@@ -1103,7 +1103,7 @@ public class MusicHome {
 
     // HOUR
     JPanel hourPanel = new JPanel(new BorderLayout());
-    JComboBox<Integer> comboBox = new JComboBox<Integer>(zeroThroughTwelve);
+    final JComboBox<Integer> comboBox = new JComboBox<Integer>(zeroThroughTwelve);
 
     JLabel lblHour = new JLabel("Hr");
     lblHour.setBorder(new EmptyBorder(4, 20, 0, 4));
@@ -1115,7 +1115,7 @@ public class MusicHome {
 
     // MINUTE
     JPanel minutePanel = new JPanel(new BorderLayout());
-    JComboBox<Integer> comboBox_1 = new JComboBox<Integer>(zeroThroughFiftyNine);
+    final JComboBox<Integer> comboBox_1 = new JComboBox<Integer>(zeroThroughFiftyNine);
 
     JLabel lblMin = new JLabel("Min");
     lblMin.setBorder(new EmptyBorder(4, 20, 0, 4));
@@ -1127,7 +1127,7 @@ public class MusicHome {
 
     // AM
     JPanel amPanel = new JPanel(new BorderLayout());
-    JComboBox<String> comboBox_2 = new JComboBox<String>(amOrPm);
+    final JComboBox<String> comboBox_2 = new JComboBox<String>(amOrPm);
     JLabel lblAmpm = new JLabel("Am/Pm");
     lblAmpm.setBorder(new EmptyBorder(4, 15, 0, 4));
 

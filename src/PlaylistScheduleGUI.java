@@ -19,6 +19,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JList;
@@ -32,7 +33,7 @@ import javax.swing.event.ListSelectionListener;
 
 public class PlaylistScheduleGUI {
 
-<<<<<<< HEAD
+//<<<<<<< HEAD
 	//MainFrame
 	private JFrame mainframe;
 	private JPanel mainPanel;
@@ -202,14 +203,16 @@ public class PlaylistScheduleGUI {
 			// TODO: handle exception
 			System.out.println(e);
 		}
-	}
 	
+	}
 	/*
 	public static void main(String[] args) {
 	     PlaylistScheduleGUI p = new PlaylistScheduleGUI();
 	     p.prepareGUI();
 	  }
 	*/
+	
+	/*
 =======
   // scheduleFrame
   private JFrame scheduleFrame;
@@ -361,9 +364,8 @@ public class PlaylistScheduleGUI {
     }
   }
 
-  /*
-   * public static void main(String[] args) { PlaylistScheduleGUI p = new PlaylistScheduleGUI();
-   * p.prepareGUI(); }
-   */
->>>>>>> master
+
+
+
+	*/
 }
