@@ -89,7 +89,7 @@ public class ScheduledPlay {
 		t = new Timer();
 		isPlaylist = true;
 		t.schedule( new scheduledPlaylist ( list, mh ), time );
-		System.out.println( "Playlist \"" + list.name + "\" scheduled for: " + time );
+		System.out.println( "Playlist \"" + list.getName() + "\" scheduled for: " + time );
 	}
 	
 	// Cancel current timer

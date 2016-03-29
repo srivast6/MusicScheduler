@@ -35,8 +35,8 @@ public class PlaylistScheduleGUI {
 
 //<<<<<<< HEAD
 	//MainFrame
-	private JFrame mainframe;
-	private JPanel mainPanel;
+	private JFrame scheduleFrame;
+	private JPanel schedulePanel;
 	private JPanel topPanel;
 	private JButton scheduleButton;
 	private JList playlistView;
@@ -52,17 +52,17 @@ public class PlaylistScheduleGUI {
 	
 	DateFormat formatter = new SimpleDateFormat("yyyy-MMM-dd HH:mm:ss");
 
-	public PlaylistScheduleGUI( MusicHome mh ) {
-		this.musicHome = mh;
+	public PlaylistScheduleGUI( MusicHome m ) {
+	    this.musicHome = m;
 	}
 	
 	public void prepareGUI() {
-		mainframe = new JFrame("Schedule a Playlist");
-		mainframe.setSize(300, 200);
-	    mainframe.setLayout(new BorderLayout());
-	    mainframe.setMinimumSize(new Dimension(300, 200));
+		scheduleFrame = new JFrame("Schedule a Playlist");
+	    scheduleFrame.setSize(300, 200);
+	    scheduleFrame.setLayout(new BorderLayout());
+	    scheduleFrame.setMinimumSize(new Dimension(300, 200));
 
-	    mainframe.addComponentListener(new ComponentAdapter() {
+	    scheduleFrame.addComponentListener(new ComponentAdapter() {
 	      public void componentResized(ComponentEvent evt) {
 	        Component c = (Component) evt.getSource();
 
@@ -75,22 +75,23 @@ public class PlaylistScheduleGUI {
 	      }
 
 	    });
-	    addMainPanel();
-	    mainframe.addWindowListener(new WindowAdapter() {
+	    addschedulePanel();
+	    scheduleFrame.addWindowListener(new WindowAdapter() {
 	      public void windowClosing(WindowEvent windowEvent) {
-	    	  mainframe.setVisible(false);
+	        scheduleFrame.setVisible(false);
 	      }
 	    });
-	    mainframe.setVisible(true);
+	    scheduleFrame.setVisible(true);
 	}
 	
-	private void addMainPanel() {
-		mainPanel = new JPanel();
-		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.PAGE_AXIS));
+
+	
+	private void addschedulePanel() {
+	    schedulePanel = new JPanel(new BorderLayout());
 	    addPlaylistView();
 	    addScheduleButton();
-	    mainframe.add(mainPanel);
-	}
+	    scheduleFrame.add(schedulePanel, BorderLayout.CENTER);
+	  }
 	
 	private void addScheduleButton() {
 		// TODO Auto-generated method stub
@@ -112,13 +113,12 @@ public class PlaylistScheduleGUI {
 				// readSchdule();
 			}
 		});
-		mainPanel.add(scheduleButton);
+	    schedulePanel.add(scheduleButton, BorderLayout.SOUTH);
 	}
 
 	private void addPlaylistView() {
 		// TODO Auto-generated method stub
-		topPanel = new JPanel();
-		topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.LINE_AXIS));
+	    topPanel = new JPanel(new BorderLayout());
 		//making playlist view
 		playlistEntries = new ArrayList<>();
 		playlistEntries = getPlaylistEntries();
@@ -140,9 +140,9 @@ public class PlaylistScheduleGUI {
 	    timeSpinner.setEditor(new JSpinner.DateEditor(timeSpinner, "yyyy-MMM-dd HH:mm:ss"));
 	    
 	    //add to top panel
-	    topPanel.add(playlistView);
-	    topPanel.add(timeSpinner);
-	    mainPanel.add(topPanel);
+	    topPanel.add(playlistView, BorderLayout.CENTER);
+	    topPanel.add(timeSpinner, BorderLayout.NORTH);
+	    schedulePanel.add(topPanel, BorderLayout.CENTER);
 	}
 	
 	
