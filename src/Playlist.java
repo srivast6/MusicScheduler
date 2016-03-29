@@ -162,7 +162,7 @@ public class Playlist {
 		p1.addSong( "1" );
 		p1.addSong( "2" );
 		p1.addSong( "3" );
-		p1.play();
+
 		p1.addSongNext("test");
 		System.out.println( "Songs: " + p1.size() );
 		
