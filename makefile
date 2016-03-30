@@ -30,4 +30,4 @@ classes: $(CLASSES:.java=.class)
 
 #target for make clean
 clean:
-	$(RM) ./classes/*.class MusicScheduler.jar
+	$(RM) ./classes/*.class
