@@ -1012,7 +1012,14 @@ public class MusicHome {
   // Method to load scheduled playlists from the text file on startup
   public void readSchdule() {
 	    MusicHome passingView = this;
-		File file = new File("playlistTimings.txt");
+	    File file = new File("playlistTimings.txt");;
+                try {
+                    if(!file.exists()){
+                      file.createNewFile();
+                    }
+                } catch ( Exception E ) {
+                    System.out.println(" Error creating save file");
+                }
 		String name;
 		Date date;
 		Date now = new Date();
@@ -1038,6 +1045,7 @@ public class MusicHome {
 			System.out.println(e);
 		}
 	}
+	
   public void deleteAlarmsPassed(){
 	  Calendar nowDate = Calendar.getInstance();
 	    for (int i = 0; i < alarmList.size(); i++) {
