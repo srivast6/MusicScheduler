@@ -93,11 +93,12 @@ public class Audio {
 		}
 	}
 
+	//find the name of the master output line to control the volume
 	public static Line getMasterOutputLine() {
 		for (Mixer mixer : getMixers()) {
 			for (Line line : getAvailableOutputLines(mixer)) {
-				if (line.getLineInfo().toString().contains("SPEAKER") )
-					//|| line.getLineInfo().toString().contains("HEADPHONE")) 
+				if (line.getLineInfo().toString().contains("HEADPHONE") )
+					//|| line.getLineInfo().toString().contains("SPEAKER")) 
 					return line;
 			}
 		}
