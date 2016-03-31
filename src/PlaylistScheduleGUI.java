@@ -116,8 +116,10 @@ public class PlaylistScheduleGUI {
 
         // Constuctor creates the timer thread. nothing else is neccessary.
         // This object should be saved if the timer needs to be canceled.
-		if ( d.before( LocalDate.now().plus(1) ) ) {
-							scheduler = new ScheduledPlay ( d, new Playlist ( playlistToSchedule ), musicHome );
+                Calendar check = Calendar.getInstance();
+                check.add(Calendar.DATE, 1);
+		if ( d.before( check.getTime() ) ) {
+                    scheduler = new ScheduledPlay ( d, new Playlist ( playlistToSchedule ), musicHome );
 		}
 
         // readSchdule();
