@@ -17,6 +17,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 
 import javax.swing.JButton;
@@ -102,8 +103,14 @@ public class PlaylistScheduleGUI {
       @Override
       public void actionPerformed(ActionEvent e) {
         // TODO Auto-generated method stub
-        d = (Date) timeSpinner.getValue();
-        playlistToSchedule = playlistEntries.get(selectedIndex);
+        //d = (Date) timeSpinner.getValue();
+        Calendar c = Calendar.getInstance();
+		c.set(Calendar.HOUR_OF_DAY,5);
+		c.set(Calendar.MINUTE,0);
+		c.set(Calendar.SECOND,0);
+		c.set(Calendar.MILLISECOND,0);
+		d = c.getTime();
+        playlistToSchedule = playlistNames[selectedIndex];
         System.out.println("schedule " + playlistToSchedule + " at " + formatter.format(d));
         writeSchduleToFile(playlistToSchedule, d);
 
@@ -122,7 +129,14 @@ public class PlaylistScheduleGUI {
     topPanel = new JPanel(new BorderLayout());
     // making playlist view
     playlistEntries = new ArrayList<>();
-    playlistView = new JList<>(playlistNames);
+	ArrayList<String> buggyList = new ArrayList<>();
+	System.out.println("Size" + playlistNames.length);
+	for(int i = 0; i < 2 && i < playlistNames.length; i++) {
+		buggyList.add(playlistNames[i]);
+	}
+	playlistView = new JList<>(buggyList.toArray());
+    //playlistView = new JList<>(playlistNames);
+    
     playlistView.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     playlistView.setSelectedIndex(0);
     playlistView.addListSelectionListener(new ListSelectionListener() {
