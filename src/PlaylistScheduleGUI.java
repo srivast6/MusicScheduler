@@ -116,7 +116,9 @@ public class PlaylistScheduleGUI {
 
         // Constuctor creates the timer thread. nothing else is neccessary.
         // This object should be saved if the timer needs to be canceled.
-        scheduler = new ScheduledPlay(d, new Playlist(playlistToSchedule), musicHome);
+		if ( d.before( LocalDate.now().plus(1) ) ) {
+							scheduler = new ScheduledPlay ( d, new Playlist ( playlistToSchedule ), musicHome );
+		}
 
         // readSchdule();
       }
@@ -178,7 +180,12 @@ public class PlaylistScheduleGUI {
       FileWriter fw = new FileWriter(file, true);
       // BufferedWriter writer give better performance
       BufferedWriter bw = new BufferedWriter(fw);
-      String writeToFile = name + "\n" + formatter.format(date) + "\n";
+		String writeToFile;
+		if ( name.length() > 8 ) {     
+		  writeToFile = name.substring(0,8) + "\n" + formatter.format(date) + "\n";
+		} else {
+		  writeToFile = name + "\n" + formatter.format(date) + "\n";
+		}
       bw.write(writeToFile);
       System.out.print("Writing " + writeToFile);
       // Closing BufferedWriter Stream
