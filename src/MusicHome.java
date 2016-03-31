@@ -8,25 +8,22 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileReader;
-import java.io.FileWriter;
-
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Random;
 import java.util.Date;
+import java.util.Random;
 
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
@@ -128,7 +125,7 @@ public class MusicHome {
   // Required for event and change listeners
   private BooleanChangeListener listener;
   private BooleanEventListener isPlaying;
-  
+
   // formatter for reading schedules
   DateFormat formatter = new SimpleDateFormat("yyyy-MMM-dd HH:mm:ss");
 
@@ -330,7 +327,7 @@ public class MusicHome {
       volume.addChangeListener(new ChangeListener() {
         public void stateChanged(ChangeEvent e) {
           Audio.setMasterOutputMute(false);
-          float normalizedVolume = (float) (((JSlider)e.getSource()).getValue() / (float) 100.00);
+          float normalizedVolume = (float) (((JSlider) e.getSource()).getValue() / (float) 100.00);
           Audio.setMasterOutputVolume(normalizedVolume);
 
           if (volume.getValue() == 0) {
@@ -763,8 +760,8 @@ public class MusicHome {
     newSchedule.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent event) {
-	PlaylistScheduleGUI p = new PlaylistScheduleGUI( passingView );
-	p.prepareGUI();
+        PlaylistScheduleGUI p = new PlaylistScheduleGUI(passingView, playlistNames);
+        p.prepareGUI();
       }
     });
     schedule.add(newSchedule);
@@ -928,20 +925,20 @@ public class MusicHome {
     }
     return selectedFile;
   }
-  
+
   public File getMusicDirectory() {
-	  return this.musicDirectory;
+    return this.musicDirectory;
   }
-  
+
   public ArrayList<File> getSongQueue() {
-	  return this.songQueue;
+    return this.songQueue;
   }
-  
+
   public MusicPlayer getMusicPlayer() {
-	  return this.player;
+    return this.player;
   }
-  
-  
+
+
 
   public File selectAlam() {
     // Set look and feel
@@ -1008,90 +1005,90 @@ public class MusicHome {
     musicDirectory = e.musicPath;
 
   }
-  
+
   // Method to load scheduled playlists from the text file on startup
   public void readSchdule() {
-	    MusicHome passingView = this;
-	    File file = new File("playlistTimings.txt");;
-                try {
-                    if(!file.exists()){
-                      file.createNewFile();
-                    }
-                } catch ( Exception E ) {
-                    System.out.println(" Error creating save file");
-                }
-		String name;
-		Date date;
-		Date now = new Date();
-		System.out.println("Reading");
-		try {
-			BufferedReader br = new BufferedReader(new FileReader(file));
-			String l;
-			while ((l = br.readLine()) != null) {
-				name = l;
-				date = (Date)formatter.parse(br.readLine());
-				
-				// only load future dates
-				if ( date.after(now) ) {
-					System.out.println(name + " " + formatter.format(date));
-					ScheduledPlay scheduler = new ScheduledPlay ( date, new Playlist ( l ), passingView );
-				}
-			}
-			br.close();
-		}catch(IOException ioe) {
-			System.out.println(ioe);
-		} catch (ParseException e) {
-			// TODO: handle exception
-			System.out.println(e);
-		}
-	}
-	
-  public void deleteAlarmsPassed(){
-	  Calendar nowDate = Calendar.getInstance();
-	    for (int i = 0; i < alarmList.size(); i++) {
-	      if (alarmList.get(i).getAlarmTimeCalendarObjectClean().before(nowDate)){
-	    	  
-	    	  for (int b= 0; b < scheduledAlarmsList.size(); b++) {
-	              if (alarmList.get(i).getAlarmTimeCalendarObjectClean() == scheduledAlarmsList
-	                  .get(b).alarmScheduled.getAlarmTimeCalendarObjectClean()) {
-	                scheduledAlarmsList.get(b).t.cancel();
-	                scheduledAlarmsList.remove(b);
-	              }
-	            }
-	    	  
-	    	  alarmList.remove(i);
-	      }
-	       
-	    }
+    MusicHome passingView = this;
+    File file = new File("playlistTimings.txt");;
+    try {
+      if (!file.exists()) {
+        file.createNewFile();
+      }
+    } catch (Exception E) {
+      System.out.println(" Error creating save file");
+    }
+    String name;
+    Date date;
+    Date now = new Date();
+    System.out.println("Reading");
+    try {
+      BufferedReader br = new BufferedReader(new FileReader(file));
+      String l;
+      while ((l = br.readLine()) != null) {
+        name = l;
+        date = (Date) formatter.parse(br.readLine());
+
+        // only load future dates
+        if (date.after(now)) {
+          System.out.println(name + " " + formatter.format(date));
+          ScheduledPlay scheduler = new ScheduledPlay(date, new Playlist(l), passingView);
+        }
+      }
+      br.close();
+    } catch (IOException ioe) {
+      System.out.println(ioe);
+    } catch (ParseException e) {
+      // TODO: handle exception
+      System.out.println(e);
+    }
   }
-  
+
+  public void deleteAlarmsPassed() {
+    Calendar nowDate = Calendar.getInstance();
+    for (int i = 0; i < alarmList.size(); i++) {
+      if (alarmList.get(i).getAlarmTimeCalendarObjectClean().before(nowDate)) {
+
+        for (int b = 0; b < scheduledAlarmsList.size(); b++) {
+          if (alarmList.get(i).getAlarmTimeCalendarObjectClean() == scheduledAlarmsList.get(b).alarmScheduled
+              .getAlarmTimeCalendarObjectClean()) {
+            scheduledAlarmsList.get(b).t.cancel();
+            scheduledAlarmsList.remove(b);
+          }
+        }
+
+        alarmList.remove(i);
+      }
+
+    }
+  }
+
 
   public void alarmSetGui() {
-	  if(alarmframe != null){
-		  if(alarmframe.isVisible()){
-				alarmframe.dispatchEvent(new WindowEvent(alarmframe, WindowEvent.WINDOW_CLOSING));
-			}
-	  }
-	final MusicHome passingView = this;
+    if (alarmframe != null) {
+      if (alarmframe.isVisible()) {
+        alarmframe.dispatchEvent(new WindowEvent(alarmframe, WindowEvent.WINDOW_CLOSING));
+      }
+    }
+    final MusicHome passingView = this;
     ArrayList<String> alarmsInList = new ArrayList<String>();
     for (int i = 0; i < alarmList.size(); i++) {
       alarmsInList.add(alarmList.get(i).getAlarmTime());
     }
     Calendar nowDate = Calendar.getInstance();
     for (int i = 0; i < alarmList.size(); i++) {
-      if (alarmList.get(i).getAlarmTimeCalendarObjectClean().before(nowDate)){
-    	  
-    	  for (int b= 0; b < scheduledAlarmsList.size(); b++) {
-              if (alarmList.get(i).getAlarmTimeCalendarObjectClean() == scheduledAlarmsList
-                  .get(b).alarmScheduled.getAlarmTimeCalendarObjectClean()) {
-                scheduledAlarmsList.get(b).t.cancel();
-                scheduledAlarmsList.remove(b);
-              }
-            }
-    	  
-    	  alarmList.remove(i);
+      if (alarmList.get(i).getAlarmTimeCalendarObjectClean().before(nowDate)) {
+
+        for (int b = 0; b < scheduledAlarmsList.size(); b++) {
+          if (alarmList.get(i).getAlarmTimeCalendarObjectClean() == scheduledAlarmsList.get(b).alarmScheduled
+              .getAlarmTimeCalendarObjectClean()) {
+            scheduledAlarmsList.get(b).t.cancel();
+            scheduledAlarmsList.remove(b);
+          }
+        }
+
+        alarmList.remove(i);
       }
-       
+
     }
 
     alarmframe = new JFrame("Alarms");
@@ -1164,21 +1161,20 @@ public class MusicHome {
         Alarm newAlarm = new Alarm();
 
         int hour;
-        if (comboBox_2.getSelectedItem() == "PM"){
-          if((int) comboBox.getSelectedItem() != 12)
-        	  hour = (int) comboBox.getSelectedItem() + 12;
+        if (comboBox_2.getSelectedItem() == "PM") {
+          if ((int) comboBox.getSelectedItem() != 12)
+            hour = (int) comboBox.getSelectedItem() + 12;
           else
-        	  hour = 12;
-          
-        }
-        else{
-        	if((int) comboBox.getSelectedItem() != 12)
-      		  hour = (int) comboBox.getSelectedItem();
-      	  	else 
-      		  hour = 0;
+            hour = 12;
+
+        } else {
+          if ((int) comboBox.getSelectedItem() != 12)
+            hour = (int) comboBox.getSelectedItem();
+          else
+            hour = 0;
         }
 
-        
+
         Calendar currentTime = Calendar.getInstance();
         newAlarm.setAlarmTimeWithInts(hour, comboBox_1.getSelectedIndex());
         // If User tries to do for a time that has already passed make it for the next day
@@ -1237,5 +1233,3 @@ public class MusicHome {
   }
 
 };
-
-
