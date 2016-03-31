@@ -96,8 +96,9 @@ public class Audio {
 	public static Line getMasterOutputLine() {
 		for (Mixer mixer : getMixers()) {
 			for (Line line : getAvailableOutputLines(mixer)) {
-				if (line.getLineInfo().toString().contains("SPEAKER") ||
-					line.getLineInfo().toString().contains("HEADPHONE")) return line;
+				if (line.getLineInfo().toString().contains("SPEAKER") )
+					//|| line.getLineInfo().toString().contains("HEADPHONE")) 
+					return line;
 			}
 		}
 		return null;

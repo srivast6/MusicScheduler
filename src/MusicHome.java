@@ -324,10 +324,10 @@ public class MusicHome {
       volume.setValue(initValue);
 
 
-      volume.addChangeListener(new ChangeListener() {
+      /*volume.addChangeListener(new ChangeListener() {
         public void stateChanged(ChangeEvent e) {
           Audio.setMasterOutputMute(false);
-          float normalizedVolume = (float) (((JSlider) e.getSource()).getValue() / (float) 100.00);
+          float normalizedVolume = (((JSlider) e.getSource()).getValue() / 100);
           Audio.setMasterOutputVolume(normalizedVolume);
 
           if (volume.getValue() == 0) {
@@ -335,11 +335,11 @@ public class MusicHome {
             Audio.setMasterOutputVolume(0);
           } else {
             Audio.setMasterOutputMute(false);
-            normalizedVolume = (float) (((JSlider) e.getSource()).getValue() / (float) 100.00);
+            normalizedVolume = (((JSlider) e.getSource()).getValue() / 100);
             Audio.setMasterOutputVolume(normalizedVolume);
           }
         }
-      });
+      });*/
 
       volume.setBorder(new EmptyBorder(14, 0, 14, 0));
 
