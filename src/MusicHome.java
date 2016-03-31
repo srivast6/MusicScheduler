@@ -1175,18 +1175,10 @@ public class MusicHome {
         Alarm newAlarm = new Alarm();
 
         int hour;
-        if (comboBox_2.getSelectedItem() == "PM") {
-          if ((int) comboBox.getSelectedItem() != 12)
-            hour = (int) comboBox.getSelectedItem() + 12;
-          else
-            hour = 12;
-
-        } else {
-          if ((int) comboBox.getSelectedItem() != 12)
-            hour = (int) comboBox.getSelectedItem();
-          else
-            hour = 0;
-        }
+        if (comboBox_2.getSelectedItem() == "PM")
+        	hour = (int) comboBox.getSelectedItem() + 12;
+        else
+        	hour = (int) comboBox.getSelectedItem();
 
 
         Calendar currentTime = Calendar.getInstance();
@@ -1201,7 +1193,8 @@ public class MusicHome {
           return;
 
         newAlarm.setAlarmSound(alarmSound);
-        newAlarm.setSnoozeLengthInMinutes(PromptBox.snoozeLengthPicker());
+        int n = PromptBox.snoozeLengthPicker();
+        newAlarm.setSnoozeLengthInMinutes(1);
         alarmList.add(newAlarm);
         ScheduledAlarms schedAlarm = new ScheduledAlarms(newAlarm, player, passingView);
         scheduledAlarmsList.add(schedAlarm);
