@@ -47,7 +47,7 @@ public class Playlist {
 	}
 	
 	public int getPosition ( ) {
-		return this.position;
+		return this.position + 1;
 	}
 		
 	public int getSize ( ) {
@@ -147,11 +147,13 @@ public class Playlist {
 		  if (listOfFiles[i].isFile()) {
 			System.out.println("File " + listOfFiles[i].getAbsolutePath());
 			if ( listOfFiles[i].getName().endsWith(".mp3") ) {
-				addSong( listOfFiles[i].getAbsolutePath() );
+				if ( i % 2 == 0 ) {
+					addSong( listOfFiles[i].getAbsolutePath() );
+				}
 			}
 		  }
 		}
-		
+		Collections.reverse(playlist);
 		setPosition( 0 );
     
 	}
